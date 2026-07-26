@@ -1,0 +1,1512 @@
+<title>Integration Migration Platform — Architecture Dossier</title>
+
+<style>
+/* ─────────────────────────────────────────────────────────────
+   TOKENS
+   Hue carries meaning: teal = architecture/platform,
+   brass = money/cost. crit/ok are semantic status only.
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --paper:      #f4f6f5;
+  --paper-2:    #eaeeec;
+  --paper-3:    #e0e5e3;
+  --ink:        #101a1c;
+  --ink-2:      #37474a;
+  --ink-3:      #647577;
+  --rule:       #cfd8d6;
+  --rule-soft:  #dee5e3;
+
+  --teal:       #0d6e63;
+  --teal-2:     #0a544c;
+  --teal-wash:  #0d6e6314;
+  --brass:      #9a6a1f;
+  --brass-2:    #7d5416;
+  --brass-wash: #9a6a1f16;
+  --crit:       #a8342a;
+  --crit-wash:  #a8342a14;
+  --ok:         #2f6d3f;
+
+  --mono: "Cascadia Code", "Cascadia Mono", "JetBrains Mono", "IBM Plex Mono", Consolas, "SF Mono", "Roboto Mono", Menlo, monospace;
+  --serif: Charter, "Bitstream Charter", "Iowan Old Style", "Source Serif Pro", Cambria, Georgia, serif;
+  --sans: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+
+  --measure: 68ch;
+  --field: 1180px;
+  --pad: clamp(1.1rem, 4vw, 2.75rem);
+
+  --s-1: 0.82rem;
+  --s0:  1.0rem;
+  --s1:  1.16rem;
+  --s2:  1.42rem;
+  --s3:  1.78rem;
+  --s4:  2.3rem;
+  --s5:  clamp(2.3rem, 6.2vw, 3.5rem);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:      #0b1113;
+    --paper-2:    #111a1c;
+    --paper-3:    #172225;
+    --ink:        #e6ecea;
+    --ink-2:      #b3c2c0;
+    --ink-3:      #7d8f8d;
+    --rule:       #253235;
+    --rule-soft:  #1c272a;
+    --teal:       #45b8a7;
+    --teal-2:     #7fd3c6;
+    --teal-wash:  #45b8a71c;
+    --brass:      #d7a648;
+    --brass-2:    #e8bd66;
+    --brass-wash: #d7a6481c;
+    --crit:       #e2705f;
+    --crit-wash:  #e2705f1c;
+    --ok:         #6cbb7f;
+  }
+}
+:root[data-theme="dark"] {
+  --paper:#0b1113; --paper-2:#111a1c; --paper-3:#172225;
+  --ink:#e6ecea; --ink-2:#b3c2c0; --ink-3:#7d8f8d;
+  --rule:#253235; --rule-soft:#1c272a;
+  --teal:#45b8a7; --teal-2:#7fd3c6; --teal-wash:#45b8a71c;
+  --brass:#d7a648; --brass-2:#e8bd66; --brass-wash:#d7a6481c;
+  --crit:#e2705f; --crit-wash:#e2705f1c; --ok:#6cbb7f;
+}
+:root[data-theme="light"] {
+  --paper:#f4f6f5; --paper-2:#eaeeec; --paper-3:#e0e5e3;
+  --ink:#101a1c; --ink-2:#37474a; --ink-3:#647577;
+  --rule:#cfd8d6; --rule-soft:#dee5e3;
+  --teal:#0d6e63; --teal-2:#0a544c; --teal-wash:#0d6e6314;
+  --brass:#9a6a1f; --brass-2:#7d5416; --brass-wash:#9a6a1f16;
+  --crit:#a8342a; --crit-wash:#a8342a14; --ok:#2f6d3f;
+}
+
+/* ── base ─────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: var(--s1);
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+img, svg { max-width: 100%; }
+
+.field { max-width: var(--field); margin-inline: auto; padding-inline: var(--pad); }
+.col   { max-width: var(--measure); }
+.col-c { max-width: var(--measure); margin-inline: auto; }
+
+p { margin: 0 0 0.9em; }
+p:last-child { margin-bottom: 0; }
+a { color: var(--teal); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { color: var(--ink); }
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 2px; }
+
+strong { font-weight: 650; }
+em { font-style: italic; }
+code, .m { font-family: var(--mono); font-size: 0.875em; }
+code {
+  background: var(--paper-3); border: 1px solid var(--rule-soft);
+  padding: 0.06em 0.34em; border-radius: 3px; white-space: nowrap;
+}
+
+/* ── sticky bar ───────────────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 40;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(9px);
+  border-bottom: 1px solid var(--rule);
+}
+.topbar-in {
+  max-width: var(--field); margin-inline: auto; padding: 0.55rem var(--pad);
+  display: flex; align-items: baseline; gap: 0.85rem;
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.topbar-in b { color: var(--ink); font-weight: 600; letter-spacing: 0.04em; }
+.topbar-in .now { margin-left: auto; color: var(--teal); text-transform: none; letter-spacing: 0.02em; }
+
+/* ── masthead ─────────────────────────────────────────── */
+.mast { padding: clamp(2.6rem, 8vw, 5.5rem) 0 2.4rem; }
+.eyebrow {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--brass); margin: 0 0 1.4rem;
+  display: flex; align-items: center; gap: 0.7rem;
+}
+.eyebrow::after { content: ""; height: 1px; flex: 1; background: var(--rule); max-width: 200px; }
+h1 {
+  font-family: var(--mono); font-weight: 600;
+  font-size: var(--s5); line-height: 1.06; letter-spacing: -0.02em;
+  margin: 0 0 1.1rem; text-wrap: balance; max-width: 26ch;
+}
+h1 .fade { color: var(--ink-3); }
+.standfirst { font-size: var(--s2); line-height: 1.48; color: var(--ink-2); max-width: 56ch; }
+.meta {
+  margin-top: 2.2rem; padding-top: 1.1rem; border-top: 1px solid var(--rule);
+  display: flex; flex-wrap: wrap; gap: 0.55rem 2.2rem;
+  font-family: var(--mono); font-size: 0.74rem; color: var(--ink-3);
+}
+.meta b { color: var(--ink-2); font-weight: 500; }
+
+/* ── contents ─────────────────────────────────────────── */
+.toc { padding: 0 0 3.2rem; }
+.toc-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  gap: 1px; background: var(--rule-soft); border: 1px solid var(--rule-soft);
+}
+.toc-grid a {
+  background: var(--paper); padding: 0.7rem 0.85rem; text-decoration: none;
+  display: flex; gap: 0.6rem; align-items: baseline;
+  font-family: var(--sans); font-size: 0.86rem; line-height: 1.35; color: var(--ink-2);
+}
+.toc-grid a:hover { background: var(--teal-wash); color: var(--ink); }
+.toc-grid .n { font-family: var(--mono); font-size: 0.7rem; color: var(--brass); }
+
+/* ── sections ─────────────────────────────────────────── */
+section { padding: 0 0 3.6rem; }
+.sechead { position: relative; margin: 0 0 1.5rem; padding-top: 2.6rem; }
+.sechead::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0;
+  height: 1px; background: var(--rule);
+}
+.sechead::after {
+  content: ""; position: absolute; top: -3px; left: 0;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--paper); border: 1px solid var(--teal);
+}
+.sechead .num {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em;
+  color: var(--brass); display: block; margin-bottom: 0.5rem;
+}
+h2 {
+  font-family: var(--mono); font-weight: 600; font-size: var(--s3);
+  line-height: 1.18; letter-spacing: -0.015em; margin: 0; text-wrap: balance;
+  max-width: 34ch;
+}
+h3 {
+  font-family: var(--mono); font-weight: 600; font-size: var(--s1);
+  letter-spacing: -0.005em; margin: 2.1rem 0 0.7rem; text-wrap: balance;
+}
+h4 {
+  font-family: var(--sans); font-weight: 640; font-size: 0.82rem;
+  letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-3);
+  margin: 1.8rem 0 0.6rem;
+}
+.lede { font-size: var(--s2); line-height: 1.5; color: var(--ink-2); margin-bottom: 1.3rem; }
+
+/* ── prose furniture ──────────────────────────────────── */
+ul, ol { margin: 0 0 1em; padding-left: 1.35em; }
+li { margin-bottom: 0.42em; }
+li::marker { color: var(--ink-3); }
+ol li::marker { font-family: var(--mono); font-size: 0.85em; color: var(--brass); }
+
+blockquote {
+  margin: 1.5rem 0; padding: 0.9rem 0 0.9rem 1.2rem;
+  border-left: 2px solid var(--brass); color: var(--ink-2);
+  font-size: var(--s1); font-style: italic;
+}
+.callout {
+  margin: 1.6rem 0; padding: 1.05rem 1.2rem;
+  background: var(--teal-wash); border: 1px solid var(--rule-soft);
+  border-left: 3px solid var(--teal); font-size: var(--s0);
+}
+.callout.money { background: var(--brass-wash); border-left-color: var(--brass); }
+.callout.warn  { background: var(--crit-wash); border-left-color: var(--crit); }
+.callout .k {
+  display: block; font-family: var(--mono); font-size: 0.7rem;
+  letter-spacing: 0.11em; text-transform: uppercase; color: var(--ink-3);
+  margin-bottom: 0.4rem;
+}
+
+/* ── tables ───────────────────────────────────────────── */
+.tw { overflow-x: auto; margin: 1.6rem 0; border: 1px solid var(--rule-soft); }
+table { border-collapse: collapse; width: 100%; min-width: 620px; background: var(--paper); }
+caption {
+  caption-side: bottom; text-align: left; padding: 0.6rem 0.8rem;
+  font-family: var(--mono); font-size: 0.7rem; color: var(--ink-3);
+  border-top: 1px solid var(--rule-soft);
+}
+th, td {
+  text-align: left; vertical-align: top;
+  padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--rule-soft);
+  font-family: var(--sans); font-size: 0.87rem; line-height: 1.45;
+}
+thead th {
+  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-3); font-weight: 500;
+  background: var(--paper-2); border-bottom: 1px solid var(--rule);
+  white-space: nowrap; position: sticky; top: 0;
+}
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: var(--paper-2); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); }
+td .t { font-family: var(--mono); font-size: 0.82em; color: var(--ink-2); }
+
+.pill {
+  display: inline-block; font-family: var(--mono); font-size: 0.66rem;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 0.14em 0.48em; border-radius: 2px; white-space: nowrap;
+  border: 1px solid currentColor;
+}
+.pill.done  { color: var(--ok); }
+.pill.part  { color: var(--brass); }
+.pill.none  { color: var(--crit); }
+.pill.neu   { color: var(--ink-3); }
+.pill.teal  { color: var(--teal); }
+
+.sev { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--mono); font-size: 0.72rem; white-space: nowrap; }
+.sev i { width: 3px; height: 1.05em; border-radius: 1px; background: currentColor; }
+.sev.s3 { color: var(--crit); } .sev.s2 { color: var(--brass); } .sev.s1 { color: var(--ink-3); }
+
+/* ── schematic chain (hand-built pipeline) ────────────── */
+.chain { margin: 1.8rem 0; overflow-x: auto; padding-bottom: 0.4rem; }
+.chain-in { display: flex; align-items: stretch; gap: 0; min-width: 700px; }
+.step { flex: 1; position: relative; padding: 0 0.55rem; }
+.step:first-child { padding-left: 0; } .step:last-child { padding-right: 0; }
+.step-n {
+  font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em;
+  color: var(--brass); margin-bottom: 0.45rem;
+}
+.step-box {
+  border: 1px solid var(--rule); border-top: 2px solid var(--teal);
+  background: var(--paper-2); padding: 0.7rem 0.75rem; height: 100%;
+}
+.step-t { font-family: var(--mono); font-size: 0.82rem; font-weight: 600; margin-bottom: 0.3rem; line-height: 1.25; }
+.step-d { font-family: var(--sans); font-size: 0.78rem; color: var(--ink-3); line-height: 1.4; }
+.step::after {
+  content: ""; position: absolute; top: 1.75rem; right: -4px;
+  width: 8px; height: 8px; border-right: 1px solid var(--ink-3);
+  border-top: 1px solid var(--ink-3); transform: rotate(45deg);
+}
+.step:last-child::after { display: none; }
+
+/* ── mermaid ──────────────────────────────────────────── */
+pre.mermaid {
+  margin: 1.8rem 0; padding: 1.1rem; overflow-x: auto;
+  background: var(--paper-2); border: 1px solid var(--rule-soft);
+  text-align: center;
+}
+
+/* ─────────────────────────────────────────────────────────
+   PROTOTYPE 1 — cost calculator
+   ───────────────────────────────────────────────────────── */
+.proto {
+  margin: 2rem 0; border: 1px solid var(--rule); background: var(--paper-2);
+}
+.proto-bar {
+  display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap;
+  padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--rule);
+  background: var(--paper-3);
+  font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.proto-bar .live {
+  display: inline-flex; align-items: center; gap: 0.35rem; color: var(--teal);
+}
+.proto-bar .live i { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
+.proto-body { padding: 1.1rem 0.9rem 1.3rem; }
+
+.ctrl-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1rem 1.4rem; margin-bottom: 1.3rem;
+}
+.ctrl label.lb {
+  display: block; font-family: var(--sans); font-weight: 620;
+  font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: 0.45rem;
+}
+.ctrl .val {
+  font-family: var(--mono); font-size: 1.18rem; font-variant-numeric: tabular-nums;
+  color: var(--ink); display: block; margin-bottom: 0.3rem;
+}
+.ctrl .val small { font-size: 0.68rem; color: var(--ink-3); letter-spacing: 0.05em; }
+input[type="range"] { width: 100%; accent-color: var(--brass); }
+.tag {
+  display: inline-block; font-family: var(--mono); font-size: 0.62rem;
+  letter-spacing: 0.08em; text-transform: uppercase; padding: 0.12em 0.4em;
+  border: 1px solid var(--brass); color: var(--brass); border-radius: 2px;
+}
+.tag.meas { border-color: var(--teal); color: var(--teal); }
+.chk { display: flex; align-items: flex-start; gap: 0.5rem; font-family: var(--sans); font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--ink-2); }
+.chk input { margin-top: 0.25rem; accent-color: var(--teal); }
+.numin {
+  font-family: var(--mono); font-size: 0.9rem; width: 5.5rem;
+  padding: 0.25rem 0.4rem; background: var(--paper); color: var(--ink);
+  border: 1px solid var(--rule);
+}
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)); gap: 1px; background: var(--rule-soft); border: 1px solid var(--rule-soft); }
+.card { background: var(--paper); padding: 0.75rem 0.8rem; position: relative; }
+.card.rec { background: var(--brass-wash); }
+.card.rec::before {
+  content: "recommended"; position: absolute; top: 0; right: 0;
+  font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.1em;
+  text-transform: uppercase; background: var(--brass); color: var(--paper);
+  padding: 0.12em 0.4em;
+}
+.card .ct { font-family: var(--mono); font-size: 0.74rem; line-height: 1.3; color: var(--ink-2); margin-bottom: 0.5rem; min-height: 2.4em; }
+.card .cv { font-family: var(--mono); font-size: 1.25rem; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.card .cn { font-family: var(--sans); font-size: 0.72rem; color: var(--ink-3); margin-top: 0.3rem; line-height: 1.35; }
+.card .swatch { display: inline-block; width: 18px; height: 3px; margin-bottom: 0.4rem; }
+
+.chartwrap { margin-top: 1.3rem; overflow-x: auto; }
+.chartwrap svg { display: block; min-width: 560px; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.2rem; margin-top: 0.6rem; font-family: var(--mono); font-size: 0.7rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.legend i { width: 20px; height: 0; border-top-width: 2px; border-top-style: solid; }
+
+.flip {
+  margin-top: 1.2rem; padding: 0.8rem 0.95rem; background: var(--paper-3);
+  border: 1px solid var(--rule-soft); border-left: 3px solid var(--brass);
+  font-family: var(--sans); font-size: 0.87rem; line-height: 1.5;
+}
+.flip b { font-family: var(--mono); font-weight: 600; }
+
+/* ─────────────────────────────────────────────────────────
+   PROTOTYPE 2 — stage rail
+   ───────────────────────────────────────────────────────── */
+.rail { display: flex; min-width: 760px; }
+.railwrap { overflow-x: auto; padding: 0.5rem 0 0.2rem; }
+.node { flex: 1; background: none; border: 0; padding: 0; cursor: pointer; text-align: center; position: relative; font: inherit; color: inherit; }
+.node .line { position: absolute; top: 17px; left: 50%; right: -50%; height: 1px; background: var(--rule); }
+.node:last-child .line { display: none; }
+.node.reached .line { background: var(--teal); }
+.node .dot {
+  position: relative; z-index: 2; width: 34px; height: 34px; margin: 0 auto 0.5rem;
+  border-radius: 50%; display: grid; place-items: center;
+  background: var(--paper-2); border: 1.5px solid var(--rule); color: var(--ink-3);
+  transition: transform 0.14s ease;
+}
+.node:hover .dot { transform: translateY(-2px); }
+.node .dot svg { width: 15px; height: 15px; }
+.node .nm {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.02em;
+  color: var(--ink-3); display: block; line-height: 1.2;
+}
+.node .bg {
+  display: inline-block; margin-top: 0.35rem;
+  font-family: var(--mono); font-size: 0.62rem; font-variant-numeric: tabular-nums;
+  padding: 0.1em 0.38em; border-radius: 2px;
+  background: var(--paper-3); color: var(--ink-3); border: 1px solid var(--rule-soft);
+}
+.node[aria-current="true"] .nm { color: var(--ink); font-weight: 600; }
+.node[aria-current="true"] .dot { box-shadow: 0 0 0 4px var(--teal-wash); }
+
+/* state treatments — form as well as colour */
+.node[data-state="done"] .dot     { background: var(--teal); border-color: var(--teal); color: var(--paper); }
+.node[data-state="running"] .dot  { border-color: var(--teal); color: var(--teal); border-style: solid; }
+.node[data-state="running"] .dot::after {
+  content: ""; position: absolute; inset: -5px; border-radius: 50%;
+  border: 1.5px dashed var(--teal); opacity: 0.75;
+  animation: spin 5.5s linear infinite;
+}
+.node[data-state="input"] .dot    { border-color: var(--brass); border-style: dashed; color: var(--brass); background: var(--brass-wash); }
+.node[data-state="approval"] .dot { border-color: var(--brass); background: var(--brass); color: var(--paper); }
+.node[data-state="approval"] .dot::after {
+  content: ""; position: absolute; inset: -5px; border-radius: 50%;
+  border: 1.5px solid var(--brass); opacity: 0.4;
+}
+.node[data-state="failed"] .dot   { border-color: var(--crit); background: var(--crit); color: var(--paper); }
+.node[data-state="idle"] .dot     { border-style: dotted; }
+.node[data-state="done"] .nm, .node[data-state="running"] .nm { color: var(--ink-2); }
+.node[data-state="input"] .bg, .node[data-state="approval"] .bg { border-color: var(--brass); color: var(--brass); }
+.node[data-state="failed"] .bg { border-color: var(--crit); color: var(--crit); }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .node[data-state="running"] .dot::after { animation: none; }
+  .node:hover .dot { transform: none; }
+}
+
+.detail { margin-top: 1.2rem; border: 1px solid var(--rule); background: var(--paper); }
+.detail-h {
+  display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap;
+  padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--rule-soft); background: var(--paper-2);
+}
+.detail-h .eng { font-family: var(--mono); font-size: 0.9rem; font-weight: 600; }
+.detail-h .st {
+  font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.09em;
+  text-transform: uppercase; padding: 0.16em 0.45em; border: 1px solid currentColor; border-radius: 2px;
+}
+.st.s-done{color:var(--ok)} .st.s-running{color:var(--teal)} .st.s-input{color:var(--brass)}
+.st.s-approval{color:var(--brass)} .st.s-failed{color:var(--crit)} .st.s-idle{color:var(--ink-3)}
+.detail-b { padding: 0.9rem; display: grid; gap: 0.9rem; }
+.task { font-family: var(--mono); font-size: 0.85rem; color: var(--ink); line-height: 1.5; }
+.task .el { color: var(--ink-3); }
+.bar { height: 3px; background: var(--paper-3); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--teal); }
+.kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.7rem 1rem; }
+.kv div { font-family: var(--sans); font-size: 0.78rem; color: var(--ink-3); }
+.kv b { display: block; font-family: var(--mono); font-size: 0.92rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.acts { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.btn {
+  font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.04em;
+  padding: 0.42rem 0.8rem; border: 1px solid var(--ink-3); background: none;
+  color: var(--ink); cursor: pointer;
+}
+.btn:hover { background: var(--paper-3); }
+.btn.pri { background: var(--teal); border-color: var(--teal); color: var(--paper); }
+.btn.pri:hover { background: var(--teal-2); }
+.btn.dgr { border-color: var(--crit); color: var(--crit); }
+.seg { display: flex; flex-wrap: wrap; gap: 1px; background: var(--rule-soft); border: 1px solid var(--rule-soft); width: fit-content; }
+.seg button {
+  font-family: var(--mono); font-size: 0.68rem; padding: 0.32rem 0.55rem;
+  background: var(--paper); border: 0; color: var(--ink-3); cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.hint { font-family: var(--sans); font-size: 0.78rem; color: var(--ink-3); }
+
+/* ── screens list ─────────────────────────────────────── */
+.screens { display: grid; gap: 1px; background: var(--rule-soft); border: 1px solid var(--rule-soft); margin: 1.6rem 0; }
+.screen { background: var(--paper); padding: 0.85rem 0.95rem; display: grid; grid-template-columns: 2.2rem 1fr; gap: 0.2rem 0.8rem; }
+.screen .sn { font-family: var(--mono); font-size: 0.72rem; color: var(--brass); }
+.screen .sh { font-family: var(--mono); font-size: 0.9rem; font-weight: 600; }
+.screen .sb { grid-column: 2; font-family: var(--sans); font-size: 0.84rem; color: var(--ink-2); line-height: 1.5; }
+
+/* ── phases ───────────────────────────────────────────── */
+.phase { display: grid; grid-template-columns: 6.5rem 1fr; gap: 0.9rem; padding: 0.95rem 0; border-top: 1px solid var(--rule-soft); }
+.phase:first-of-type { border-top: 0; }
+.phase .pk { font-family: var(--mono); font-size: 0.76rem; color: var(--teal); font-weight: 600; }
+.phase .pb { font-family: var(--sans); font-size: 0.87rem; line-height: 1.55; color: var(--ink-2); }
+.phase .pb b { color: var(--ink); }
+.exit { display: block; margin-top: 0.4rem; font-family: var(--mono); font-size: 0.74rem; color: var(--ink-3); }
+
+/* ── sources ──────────────────────────────────────────── */
+.src { font-family: var(--sans); font-size: 0.84rem; line-height: 1.6; }
+.src dt { font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brass); margin-top: 1.1rem; }
+.src dd { margin: 0.35rem 0 0; color: var(--ink-2); }
+.src dd a { display: inline; }
+
+footer {
+  border-top: 1px solid var(--rule); margin-top: 1rem;
+  padding: 1.6rem 0 3rem; font-family: var(--mono); font-size: 0.72rem; color: var(--ink-3);
+}
+
+@media (max-width: 620px) {
+  body { font-size: 1.04rem; }
+  .screen { grid-template-columns: 1.8rem 1fr; }
+  .phase { grid-template-columns: 1fr; gap: 0.3rem; }
+}
+</style>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <b>Integration Migration Platform</b>
+    <span>Architecture dossier</span>
+    <span class="now" id="nowsec">§01 Thesis</span>
+  </div>
+</div>
+
+<header class="mast field">
+  <p class="eyebrow">Brainstorm &amp; landscape study · no implementation</p>
+  <h1>Migrating an integration estate is a <span class="fade">placement</span> problem, not a translation problem.</h1>
+  <p class="standfirst">A design study for a tool that reads BizTalk, MuleSoft and other integration projects, decides which Azure service each flow actually belongs in — priced — and only then generates the code.</p>
+  <div class="meta">
+    <span><b>Sources</b> BizTalk · MuleSoft Anypoint · (later TIBCO, Boomi, IIB)</span>
+    <span><b>Targets</b> The Azure estate, not Logic Apps alone</span>
+    <span><b>Basis</b> Fork of <span class="m">Azure/logicapps-migration-agent</span></span>
+    <span><b>Shape</b> POC → SaaS</span>
+  </div>
+</header>
+
+<nav class="toc field" aria-label="Contents">
+  <div class="toc-grid">
+    <a href="#s1"><span class="n">01</span><span>Thesis</span></a>
+    <a href="#s2"><span class="n">02</span><span>What already exists</span></a>
+    <a href="#s3"><span class="n">03</span><span>Why the gap is real</span></a>
+    <a href="#s4"><span class="n">04</span><span>Reference architecture</span></a>
+    <a href="#s5"><span class="n">05</span><span>The intermediate representation</span></a>
+    <a href="#s6"><span class="n">06</span><span>Azure mapping matrix</span></a>
+    <a href="#s7"><span class="n">07</span><span>Cost-driven placement</span></a>
+    <a href="#s8"><span class="n">08</span><span>Engine topology</span></a>
+    <a href="#s9"><span class="n">09</span><span>Cost calculator <span class="pill teal">live</span></span></a>
+    <a href="#s10"><span class="n">10</span><span>Diagram generation</span></a>
+    <a href="#s11"><span class="n">11</span><span>UI blueprint <span class="pill teal">live</span></span></a>
+    <a href="#s12"><span class="n">12</span><span>Deterministic vs LLM</span></a>
+    <a href="#s13"><span class="n">13</span><span>Hard problems</span></a>
+    <a href="#s14"><span class="n">14</span><span>Verification</span></a>
+    <a href="#s15"><span class="n">15</span><span>Fork strategy</span></a>
+    <a href="#s16"><span class="n">16</span><span>POC → SaaS roadmap</span></a>
+    <a href="#s17"><span class="n">17</span><span>Risks, questions, sources</span></a>
+  </div>
+</nav>
+
+<main class="field">
+
+<!-- ═══════════════ 01 ═══════════════ -->
+<section id="s1" data-label="§01 Thesis">
+  <div class="sechead"><span class="num">§ 01</span><h2>Thesis</h2></div>
+  <div class="col">
+    <p class="lede">The hard part of moving fifty BizTalk applications to Azure is not rewriting the orchestrations. It is deciding, per flow, which Azure service it should become — and being able to defend that decision with a number.</p>
+    <p>Every tool in this market treats migration as translation: read the source artefact, emit the equivalent target artefact. That framing quietly assumes the target is already chosen. In practice a BizTalk estate contains a content-based router that should become three Service Bus subscription rules and no compute at all; a nightly file sweep that should become a timer-triggered function; a partner EDI exchange that has no option other than Logic Apps Standard with an Integration Account; and a high-volume SAP feed whose Azure bill differs by three orders of magnitude depending on whether it runs through a managed connector or a native client.</p>
+    <p>Translate all of those into Logic Apps and the migration will succeed technically and fail financially. So the tool proposed here inverts the usual order of operations: <strong>decide and price the placement first, generate code second, and prove behavioural parity before anything is promoted.</strong></p>
+    <p>Three source→target pairs are in scope, in this order: <strong>BizTalk → Azure</strong> (the whole Azure estate), <strong>MuleSoft → Azure</strong>, and later <strong>BizTalk → MuleSoft</strong> — which is only reachable because the intermediate representation is genuinely platform-neutral rather than an Azure-shaped funnel.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 02 ═══════════════ -->
+<section id="s2" data-label="§02 What already exists">
+  <div class="sechead"><span class="num">§ 02</span><h2>What already exists</h2></div>
+  <div class="col">
+    <p>The landscape matters because Microsoft open-sourced most of the front half of this tool in 2026, and building it again from scratch would be a waste. The table below is the honest state of the art.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>Landscape as of July 2026. "Gap" is what a commercial product would still have to supply.</caption>
+      <thead>
+        <tr><th>Tool</th><th>Status</th><th>What it covers</th><th>Gap it leaves</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><a href="https://github.com/Azure/logicapps-migration-agent">Azure/logicapps&#8209;migration&#8209;agent</a><span class="t"><br>VS Code extension</span></td>
+          <td><span class="pill part">preview</span></td>
+          <td>Registry-based parsers → a platform-neutral IR; 5-stage workflow; three Copilot agents; 25 LM tools; 13 skills per platform. BizTalk parser complete.</td>
+          <td>Logic Apps Standard is the <em>only</em> target. MuleSoft parser is a stub. Requires VS Code + a Copilot subscription. External parser plugins reach only the Discovery stage.</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/haroldcampos/BizTalkMigrationStarter">BizTalkMigrationStarter</a><span class="t"><br>CLI toolkit + MCP server</span></td>
+          <td><span class="pill part">active</span></td>
+          <td>Three deterministic converters — <code>.odx</code>→<code>workflow.json</code>, <code>.btm</code>→Data&nbsp;Mapper <code>.lml</code>, <code>.btp</code>→workflows — plus 25 AI tools over MCP.</td>
+          <td>Its own limitations list is the map of the hard parts: XSLT extraction manual, correlation sets manual, scripting functoids unconverted, custom pipeline components unsupported.</td>
+        </tr>
+        <tr>
+          <td>Azure Integration Migrator<span class="t"><br><a href="https://github.com/Azure/aimbiztalk">aimbiztalk</a>, <a href="https://github.com/Azure/aimazure">aimazure</a>, aimtool</span></td>
+          <td><span class="pill none">superseded</span></td>
+          <td>Purely deterministic: parse MSI → source model → target model → template-driven Azure assets.</td>
+          <td>Stalled precisely because rule-based conversion cannot cover the long tail. This is the historical argument for a deterministic core with an LLM only at the edges.</td>
+        </tr>
+        <tr>
+          <td><a href="https://github.com/mulesoft/mule-migration-assistant">mule-migration-assistant</a><span class="t"><br>Apache 2.0</span></td>
+          <td><span class="pill done">mature</span></td>
+          <td>Mule 3 → Mule 4 only. Tasks composed of Steps, discovered via SPI; a dedicated MEL→DataWeave expression migrator; machine-readable migration report.</td>
+          <td>Wrong direction for us — but the best available <em>engineering pattern</em> for a conversion engine, and worth copying wholesale.</td>
+        </tr>
+        <tr>
+          <td>SI &amp; consultancy offerings<span class="t"><br>Neudesic, Valorem, Tellestia, BeyondBizTalk</span></td>
+          <td><span class="pill neu">services</span></td>
+          <td>Assessment-and-roadmap engagements, hand-executed migrations, occasionally to MuleSoft or custom .NET rather than Azure.</td>
+          <td>People, not product. No repeatable artefact, no parity evidence, no portfolio economics.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col">
+    <p>Notably absent from every row: <strong>nobody verifies behavioural equivalence</strong>, and <strong>nobody prices the target</strong>. Those two absences are the product.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 03 ═══════════════ -->
+<section id="s3" data-label="§03 Why the gap is real">
+  <div class="sechead"><span class="num">§ 03</span><h2>Why the gap is real</h2></div>
+  <div class="col">
+    <p>Forking Microsoft's agent is the right call, so it is worth being precise about what it does not do — these are structural limits, not missing features.</p>
+    <h3>The target is hardcoded</h3>
+    <p>The conversion stage emits <code>workflow.json</code>, <code>connections.json</code> and .NET local functions. There is no representation of the question "should this be a workflow at all?" A flow that ought to be a Service Bus subscription rule with zero compute has nowhere to land.</p>
+    <h3>MuleSoft is a stub</h3>
+    <p>Documented support is <code>mule-*.xml</code> and <code>pom.xml</code>, marked <em>"in progress, not yet available."</em> Real Mule projects carry subflows, error-handler hierarchies, property placeholders and environment configs, connector configs, MUnit tests, and DataWeave everywhere. That parser is a substantial build, not a gap-fill.</p>
+    <h3>It cannot be a SaaS in its current shape</h3>
+    <p>The intelligence lives in GitHub Copilot agents driven through the VS Code Language Model API. That makes a Copilot subscription a hard dependency, puts the engine on the developer's laptop, and rules out the regulated customers who most need migration help. Lifting the deterministic core out of <code>vscode</code> is the single most important structural move in this whole plan.</p>
+    <h3>Extension stops at Discovery</h3>
+    <p>External parser extensions register through a plugin API but, per Microsoft's own documentation, <em>only cover the Discovery stage</em>. Planning and conversion require contributing a built-in parser into their repository. A commercial product cannot depend on upstream merge cycles.</p>
+    <div class="callout">
+      <span class="k">Positioning consequence</span>
+      Microsoft owns both the destination platform and a free tool that converts to it. Competing on conversion fidelity is competing on their turf with their roadmap. Competing on <strong>multi-target placement, priced economics and parity evidence</strong> is competing where they have chosen not to play.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 04 ═══════════════ -->
+<section id="s4" data-label="§04 Reference architecture">
+  <div class="sechead"><span class="num">§ 04</span><h2>Reference architecture</h2></div>
+  <div class="col">
+    <p>Hub-and-spoke, deterministic-first, verification-gated. Sources fan into one intermediate representation; the representation fans out to multiple emitters; nothing reaches an environment without passing a parity gate.</p>
+  </div>
+
+<pre class="mermaid">
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#0d6e63','primaryTextColor':'#ffffff','primaryBorderColor':'#0a544c','secondaryColor':'#9a6a1f','secondaryTextColor':'#ffffff','secondaryBorderColor':'#7d5416','tertiaryColor':'#4a5a5d','tertiaryTextColor':'#ffffff','tertiaryBorderColor':'#38474a','lineColor':'#8a9997','textColor':'#8a9997','clusterBkg':'transparent','clusterBorder':'#8a9997','fontFamily':'ui-monospace, Consolas, monospace','fontSize':'13px'}}}%%
+flowchart LR
+  subgraph SRC[sources]
+    B[BizTalk<br/>odx · btm · btp · xsd]
+    M[MuleSoft<br/>mule xml · pom · dwl]
+    O[TIBCO / Boomi / IIB]
+  end
+  SRC --> P[parsers<br/>registry]
+  P --> IR[(IR document<br/>platform-neutral)]
+  VOL[volumetrics<br/>tracking DB or entered] --> PL
+  IR --> AN[analysis<br/>graph · disposition · archetype]
+  AN --> PL{{placement &amp; cost<br/>policy + rate card}}
+  PL --> EM[emitters]
+  subgraph TGT[Azure targets]
+    L[Logic Apps<br/>Standard]
+    F[Functions /<br/>Durable]
+    S[Service Bus /<br/>Event Grid]
+    A[APIM]
+    D[Data Mapper ·<br/>XSLT · Liquid]
+  end
+  EM --> TGT
+  TGT --> V{parity gate<br/>golden replay}
+  V -->|pass| DP[IaC · CI/CD ·<br/>wave rollout]
+  V -->|fail| EM
+  style IR fill:#9a6a1f,stroke:#7d5416,color:#ffffff
+  style PL fill:#9a6a1f,stroke:#7d5416,color:#ffffff
+  style V fill:#4a5a5d,stroke:#38474a,color:#ffffff
+</pre>
+
+  <div class="col">
+    <p>Six commitments hold this together, and each one is a decision that could reasonably have gone the other way:</p>
+    <ol>
+      <li><strong>The deterministic core leaves VS Code.</strong> Parsers, IR, and stage logic become a standalone TypeScript library with zero <code>vscode</code> imports. The extension becomes one client; the SaaS API becomes another.</li>
+      <li><strong>The Copilot LM API is replaced by a provider abstraction</strong> — <code>ILlmProvider</code> over the Claude API server-side, with the VS Code LM API retained as an optional local provider. The 13 Markdown skills survive unchanged as prompt assets.</li>
+      <li><strong>The IR gains a <code>targetPlan</code> layer</strong> so target choice is data, carrying a chosen composition, a rationale and a confidence — rather than being implied by whichever emitter happens to run.</li>
+      <li><strong>Placement becomes an explicit engine</strong> with its own policy, its own inputs and its own approval gate (§07).</li>
+      <li><strong>Emitters are template-plus-LLM, never LLM-alone.</strong> Structure comes from templates; the model fills the parts that genuinely vary.</li>
+      <li><strong>Golden-message replay is a product feature</strong>, not a testing afterthought (§14).</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══════════════ 05 ═══════════════ -->
+<section id="s5" data-label="§05 The IR">
+  <div class="sechead"><span class="num">§ 05</span><h2>The intermediate representation</h2></div>
+  <div class="col">
+    <p>The forked IR is better than expected. It models a flow as a DAG — actions declare predecessors through <code>runAfter</code> — across eight primary sections (<code>metadata</code>, <code>workflow</code>, <code>triggers</code>, <code>actions</code>, <code>variables</code>, <code>connections</code>, <code>schemas</code>, <code>maps</code>) plus supporting sections for <code>messageProcessing</code>, <code>endpoints</code>, <code>correlation</code>, <code>errorHandling</code>, <code>rules</code>, <code>B2B</code>, <code>observability</code>, <code>dependencies</code>, <code>gaps</code> and <code>extensions</code>.</p>
+    <p>Two design details make it worth adopting rather than replacing. First, <strong>layered isolation</strong>: platform-specific detail lives in <code>sourceMapping</code> and destination detail in <code>targetMapping</code>, so neither pollutes the core model. Second, a <strong>normalised vocabulary</strong> already reconciled across eight platforms.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>The neutral vocabulary is what makes BizTalk → MuleSoft reachable later, not just BizTalk → Azure.</caption>
+      <thead><tr><th>IR concept</th><th>BizTalk</th><th>MuleSoft</th><th>Boomi</th><th>IIB / TIBCO</th></tr></thead>
+      <tbody>
+        <tr><td class="t">flow</td><td>Orchestration</td><td>Mule Flow</td><td>Process</td><td>Message Flow / Process</td></tr>
+        <tr><td class="t">action</td><td>Shape</td><td>Processor</td><td>Shape</td><td>Node / Activity</td></tr>
+        <tr><td class="t">transform</td><td>Map (<code>.btm</code>, XSLT)</td><td>DataWeave</td><td>Map</td><td>Mapping node</td></tr>
+        <tr><td class="t">condition</td><td>Decide</td><td>Choice</td><td>Decision</td><td>Route / Filter</td></tr>
+        <tr><td class="t">connection</td><td>Adapter + port</td><td>Connector</td><td>Connector</td><td>Input/Output node</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col">
+    <h3>The one addition we make</h3>
+    <p>The upstream <code>targetMapping</code> field describes a Logic Apps destination. We generalise it into a <code>targetPlan</code>: per flow and per action, the chosen Azure composition, the alternatives that were considered and rejected, the constraint that eliminated each one, the priced cost curve, and a confidence score. Placement stops being an implicit property of the code generator and becomes a reviewable, versioned artefact that a human approves.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 06 ═══════════════ -->
+<section id="s6" data-label="§06 Azure mapping matrix">
+  <div class="sechead"><span class="num">§ 06</span><h2>Azure mapping matrix</h2></div>
+  <div class="col">
+    <p>The good news for a multi-target design: Microsoft has already published the concept-level mapping, which removes most of the research risk. What they have not done is choose <em>between</em> the options on the right-hand side. That choice is §07.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>Concept mapping. Where two Azure options appear, the second is usually the cheaper one at volume.</caption>
+      <thead><tr><th>Source concept</th><th>Azure equivalent</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>BizTalk orchestration</td><td>Logic Apps Standard workflow · Durable Functions</td><td>Stateful vs code-first is a cost decision, not a style one</td></tr>
+        <tr><td>Pipelines &amp; pipeline components</td><td>Workflows as pipelines · local functions</td><td>Custom .NET components must be decompiled and rehosted</td></tr>
+        <tr><td>MessageBox, property promotion, filters</td><td>Service Bus queues &amp; topics with subscription rules</td><td>Routing becomes configuration — often zero compute</td></tr>
+        <tr><td>Adapters</td><td>Logic Apps connectors · native SDK in a Function</td><td>The connector meter is the single biggest cost lever (§07)</td></tr>
+        <tr><td><code>xref_*</code> cross-reference tables</td><td>Table Storage + cache · local functions</td><td>Cosmos DB only if genuinely global or multi-write</td></tr>
+        <tr><td>Maps (<code>.btm</code> / XSLT)</td><td>Data Mapper <code>.lml</code> · XSLT · Liquid</td><td>XSLT can often be lifted verbatim — cheapest win available</td></tr>
+        <tr><td>Business Rules Engine</td><td>Logic Apps Rules Engine</td><td><strong>Same runtime as BizTalk BRE</strong> — near-zero refactor</td></tr>
+        <tr><td>BAM</td><td>Azure Business Process Tracking</td><td>—</td></tr>
+        <tr><td>EDI — X12, EDIFACT, AS2</td><td>Logic Apps Standard + Integration Account</td><td>No cheaper option; consolidate all partners into one account</td></tr>
+        <tr><td>HL7, SWIFT, RosettaNet accelerators</td><td>Integration Account + protocol connectors</td><td>Direct equivalents exist</td></tr>
+        <tr><td>Enterprise SSO / config</td><td>Key Vault · App Configuration</td><td>—</td></tr>
+        <tr><td>Tracking &amp; monitoring</td><td>Application Insights · Azure Monitor · OpenTelemetry</td><td>OpenTelemetry for the Hybrid hosting model</td></tr>
+        <tr><td>Binding files / MSI deployment</td><td>Bicep or Terraform + Azure Pipelines</td><td>—</td></tr>
+        <tr><td colspan="3" style="background:var(--paper-2);font-family:var(--mono);font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">MuleSoft API-led layers</td></tr>
+        <tr><td>Experience API</td><td>API Management</td><td>One shared instance across the estate</td></tr>
+        <tr><td>Process API</td><td>Logic Apps Standard · Durable Functions</td><td>Where most DataWeave lives — hardest to convert</td></tr>
+        <tr><td>System API</td><td>Azure Functions · Service Bus</td><td>Thin, high-volume, cheapest as code</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════ 07 ═══════════════ -->
+<section id="s7" data-label="§07 Cost-driven placement">
+  <div class="sechead"><span class="num">§ 07</span><h2>Cost-driven placement</h2></div>
+  <div class="col">
+    <p class="lede">This is the engine that makes the product defensible. Six steps, in this order, because getting the order wrong produces confident nonsense.</p>
+  </div>
+
+  <div class="chain">
+    <div class="chain-in">
+      <div class="step"><div class="step-n">STEP 0</div><div class="step-box"><div class="step-t">Disposition</div><div class="step-d">12-month traffic per artefact → retire / consolidate / migrate / rewrite, with evidence attached.</div></div></div>
+      <div class="step"><div class="step-n">STEP 1</div><div class="step-box"><div class="step-t">Volumetrics</div><div class="step-d">Messages/month, avg &amp; p95 size, peakiness, duration, retry rate. Measured or declared — never assumed silently.</div></div></div>
+      <div class="step"><div class="step-n">STEP 2</div><div class="step-box"><div class="step-t">Archetype</div><div class="step-d">Classify the flow, then emit candidate <em>compositions</em>: trigger + compute + state + exposure.</div></div></div>
+      <div class="step"><div class="step-n">STEP 3</div><div class="step-box"><div class="step-t">Constraints</div><div class="step-d">Hard filters that override price: size, ordering, VNet, latency, EDI, adapters, residency.</div></div></div>
+      <div class="step"><div class="step-n">STEP 4</div><div class="step-box"><div class="step-t">Price</div><div class="step-d">Live rate card × volumetrics for every surviving candidate. Curves, not point estimates.</div></div></div>
+      <div class="step"><div class="step-n">STEP 5</div><div class="step-box"><div class="step-t">Pack</div><div class="step-d">Bin-pack flows onto shared hosts and one landing zone, subject to isolation rules.</div></div></div>
+    </div>
+  </div>
+
+  <div class="col">
+    <h3>Step 0 comes first for a reason</h3>
+    <p>BizTalk hands you the disposition evidence for free. <code>BizTalkDTADb</code> holds tracking history per receive port, send port and orchestration; <code>BizTalkMsgBoxDb</code> holds the subscription topology. Together they answer the question no interview answers honestly: which of these artefacts actually carries traffic? On a fifty-application estate a meaningful slice has had none for a year. <strong>Retiring 20% of the estate is a 20% saving that no conversion improvement can match</strong>, and it is the one recommendation a client can act on the same afternoon.</p>
+
+    <h3>Step 1 is the input nobody collects</h3>
+    <p>Code cannot reveal traffic. Volumetrics must therefore come from one of three places, in strict priority: harvested from the tracking database where DB access exists; entered per flow in the UI; or defaulted with an explicitly stated range. Every downstream number is tagged with which of the three it came from. A cost model built on silent assumptions is worse than no cost model, because it will be quoted.</p>
+
+    <h3>Steps 2–3 · archetype then constraint</h3>
+  </div>
+
+  <div class="tw">
+    <table>
+      <caption>Archetype → composition. Constraints are applied after classification and can eliminate the cheapest option outright.</caption>
+      <thead><tr><th>Archetype</th><th>Azure composition</th><th>Why it is cheaper</th></tr></thead>
+      <tbody>
+        <tr><td>Stateless transform &amp; forward, high volume</td><td>Function (Flex Consumption) + Service Bus</td><td>No per-action meter, no storage writes</td></tr>
+        <tr><td>Content-based routing / pub-sub fan-out</td><td>Service Bus topics + subscription rules</td><td>Routing becomes configuration — <strong>no compute at all</strong></td></tr>
+        <tr><td>Event notification, high fan-out, small payload</td><td>Event Grid</td><td>Per-million-operation pricing is the cheapest tier available</td></tr>
+        <tr><td>Synchronous request/response façade</td><td>APIM + Function backend</td><td>One shared APIM amortised across the whole estate</td></tr>
+        <tr><td>Long-running with human steps or day-scale waits</td><td>Logic Apps Standard, stateful</td><td>Durability is the requirement; volume is low so plan cost is irrelevant</td></tr>
+        <tr><td>Code-heavy long-running, high volume</td><td>Durable Functions</td><td>Orchestration without per-action or connector billing</td></tr>
+        <tr><td>Convoy / aggregator / correlation</td><td>Service Bus sessions + Durable entity, or stateful Logic App keyed on <code>CorrelationId</code></td><td>Only viable semantics; sessions are effectively free</td></tr>
+        <tr><td>Scheduled batch / bulk file movement</td><td>Function timer + Blob</td><td>ADF per-activity-run and DIU charges dwarf a timer function</td></tr>
+        <tr><td>Reference-data lookup</td><td>Table Storage + cache</td><td>Orders of magnitude below Cosmos DB for key lookups</td></tr>
+        <tr><td>Business rules</td><td>Logic Apps Rules Engine</td><td>Same runtime as BRE — the refactor is near-zero</td></tr>
+        <tr><td>EDI / B2B</td><td>Logic Apps Standard + shared Integration Account</td><td>Fixed cost, so consolidate every trading partner into one</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col">
+    <h4>Constraints that override price</h4>
+    <p>Message size above 256&nbsp;KB (Service Bus Standard is out — claim-check to Blob or move to Premium) · strict ordering (sessions required) · VNet or private endpoints · latency SLO · transactionality and idempotency · X12/EDIFACT/AS2 · adapter availability for SAP, MQ or HL7 · custom .NET assemblies · data residency and compliance.</p>
+
+    <h3>Step 4 · price from a real rate card</h3>
+    <p>Rates come from the <a href="https://learn.microsoft.com/en-us/rest/api/cost-management/retail-prices/azure-retail-prices">Azure Retail Prices API</a> — unauthenticated, per-region, per-SKU — multiplied by the harvested volumetrics. The model accounts for executions, actions per execution, connector-call class, storage transactions, duration and vCPU, egress and retention.</p>
+    <div class="callout money">
+      <span class="k">Non-negotiable rule</span>
+      <strong>The language model never produces a cost figure.</strong> It classifies ambiguous flows and writes the rationale; the priced model produces every number. This is what lets the output survive a CFO reading it.
+    </div>
+
+    <h3>Step 5 · the four levers worth encoding</h3>
+    <ol>
+      <li><strong>Enterprise connector meters are the silent budget killer.</strong> At roughly $0.001 per enterprise connector action, a SAP flow at one million messages a month costs about <strong>$1,000/month in connector charges alone</strong> — before any compute. Replacing it with a Function using a native client removes that meter entirely. Every enterprise-connector flow above a volume threshold should be flagged as a rewrite candidate.</li>
+      <li><strong>Stateful → stateless wherever the IR proves it safe.</strong> Stateful workflows write to Storage queues, tables and blobs on every action; stateless keeps state in memory. Where there are no waits, no long-running behaviour and no need for run history, default to stateless — and flag the trade-off honestly: roughly a five-minute ceiling and no run history to debug with.</li>
+      <li><strong>The Consumption ↔ Workflow Service Plan crossover</strong> sits near seven million built-in actions a month against a WS1 plan at roughly $180/month. Compute it per candidate; never apply it as a blanket policy.</li>
+      <li><strong>Bin-pack the hosts.</strong> Fifty applications do not need fifty Workflow Service Plans. Packing workflows onto shared plans — subject to blast radius, deploy cadence, scaling profile, security boundary and SLA tier — typically saves more than every per-flow service decision combined.</li>
+    </ol>
+
+    <h3>Step 6 · close the loop</h3>
+    <p>After each wave deploys, ingest Azure Cost Management actuals and Application Insights telemetry, diff them against the estimate, and recalibrate the model's coefficients. This is what turns a one-shot migration tool into a recurring-revenue product: the estimator measurably improves with every customer, and no competitor starting later has the calibration data.</p>
+
+    <div class="callout">
+      <span class="k">Policy, not code</span>
+      Express the rules as declarative, versioned YAML so each customer can tune thresholds and every recommendation is auditable after the fact. When an architect overrides a placement, capture the reason — those overrides are the training signal for the policy, and they are also the audit trail.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 08 ═══════════════ -->
+<section id="s8" data-label="§08 Engine topology">
+  <div class="sechead"><span class="num">§ 08</span><h2>Engine topology</h2></div>
+  <div class="col">
+    <div class="callout">
+      <span class="k">The principle everything else depends on</span>
+      <strong>Engines communicate through versioned, typed artefacts in a case store — never through chat.</strong> Each engine reads named artefacts and writes its own, like a build pipeline. Agents passing prose to one another cannot be reproduced, diffed, or audited.
+    </div>
+    <p>Every engine emits its artefact plus a confidence score and a gap list. Because artefacts are versioned, a case can be replayed or forked — "clone this at ten times the volume" — without re-running the expensive stages.</p>
+  </div>
+
+  <div class="tw">
+    <table>
+      <caption>Ten engines. Nature matters as much as function: deterministic engines are testable, agentic engines need gates.</caption>
+      <thead><tr><th>#</th><th>Engine</th><th>Nature</th><th>Consumes</th><th>Produces</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0</td><td><strong>Ingest</strong></td><td><span class="pill teal">deterministic</span></td><td>GitHub repo, folder, zip, MSI</td><td>Normalised workspace, platform detection, artefact inventory</td></tr>
+        <tr><td class="num">1</td><td><strong>Analysis</strong></td><td><span class="pill part">hybrid</span></td><td>Workspace</td><td><code>ir.json</code>, dependency graph, complexity &amp; gap scores, disposition, archetype per flow</td></tr>
+        <tr><td class="num">2</td><td><strong>Placement &amp; Cost</strong></td><td><span class="pill teal">deterministic + policy</span></td><td><code>ir.json</code>, volumetrics, rate card</td><td><code>placement.json</code> — composition, alternatives, cost curve, crossover thresholds; <code>tco.json</code></td></tr>
+        <tr><td class="num">3</td><td><strong>Architecture Design</strong></td><td><span class="pill part">hybrid</span></td><td><code>ir.json</code>, <code>placement.json</code></td><td>As-is, proposed and landing-zone diagrams; sequence diagrams; ADRs</td></tr>
+        <tr><td class="num">4</td><td><strong>Planning</strong></td><td><span class="pill none">agentic</span></td><td>All of the above</td><td>Wave plan, task breakdown, effort, risk register → <strong>approval gate</strong></td></tr>
+        <tr><td class="num">5</td><td><strong>Development</strong></td><td><span class="pill none">agentic, env-in-loop</span></td><td>Approved plan</td><td>Generated project, one branch and PR per flow, built and tested in a sandbox</td></tr>
+        <tr><td class="num">6</td><td><strong>Verification</strong></td><td><span class="pill teal">deterministic</span></td><td>Generated code + golden messages</td><td>Per-flow parity score, contract tests, promotion gate</td></tr>
+        <tr><td class="num">7</td><td><strong>Deployment</strong></td><td><span class="pill part">hybrid</span></td><td>Verified artefacts</td><td>Bicep/Terraform, CI/CD, wave rollout, shadow run, cutover and rollback</td></tr>
+        <tr><td class="num">8</td><td><strong>Documentation</strong></td><td><span class="pill none">agentic, continuous</span></td><td>The whole artefact store</td><td>Assessment report, ADRs, traceability matrix, runbooks, handover pack</td></tr>
+        <tr><td class="num">9</td><td><strong>Orchestrator</strong></td><td><span class="pill teal">state machine</span></td><td>—</td><td>Stage transitions, approval gates, audit log, artefact versioning, replay and fork</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+<pre class="mermaid">
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#0d6e63','primaryTextColor':'#ffffff','primaryBorderColor':'#0a544c','secondaryColor':'#9a6a1f','secondaryTextColor':'#ffffff','secondaryBorderColor':'#7d5416','tertiaryColor':'#4a5a5d','tertiaryTextColor':'#ffffff','tertiaryBorderColor':'#38474a','lineColor':'#8a9997','textColor':'#8a9997','clusterBkg':'transparent','clusterBorder':'#8a9997','fontFamily':'ui-monospace, Consolas, monospace','fontSize':'13px'}}}%%
+flowchart TB
+  I[0 · Ingest] --> A[1 · Analysis]
+  A --> C[2 · Placement &amp; Cost]
+  C --> G1{{gate · architect<br/>approves placement}}
+  G1 --> AR[3 · Architecture Design]
+  AR --> PN[4 · Planning]
+  PN --> G2{{gate · sponsor<br/>approves plan}}
+  G2 --> DV[5 · Development]
+  DV --> VF[6 · Verification]
+  VF -->|parity below threshold| DV
+  VF -->|parity met| G3{{gate · approver<br/>authorises release}}
+  G3 --> DP[7 · Deployment]
+  DP --> FO[FinOps loop<br/>actuals → recalibrate]
+  FO -.-> C
+  DOC[8 · Documentation<br/>continuous] -.- A
+  DOC -.- C
+  DOC -.- DP
+  style G1 fill:#9a6a1f,stroke:#7d5416,color:#ffffff
+  style G2 fill:#9a6a1f,stroke:#7d5416,color:#ffffff
+  style G3 fill:#9a6a1f,stroke:#7d5416,color:#ffffff
+  style DOC fill:#4a5a5d,stroke:#38474a,color:#ffffff
+  style FO fill:#4a5a5d,stroke:#38474a,color:#ffffff
+</pre>
+
+  <div class="col">
+    <p>Two engines were not on the original list and both are load-bearing. <strong>Verification</strong> is non-negotiable — without a parity number nobody trusts generated integration code, and the whole product reduces to a code generator with good marketing. <strong>Documentation</strong> is deliberately not a stage: it runs continuously off the artefact store, so the assessment report and traceability matrix are never stale.</p>
+    <p>Run the orchestrator itself on <strong>Durable Functions</strong>. Beyond being the right tool, it means the platform is built on the same services it recommends — which is the most persuasive reference architecture available.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 09 ═══════════════ -->
+<section id="s9" data-label="§09 Cost calculator">
+  <div class="sechead"><span class="num">§ 09</span><h2>Cost calculator</h2></div>
+  <div class="col">
+    <p>Because cost is a pure function of placement, volume and rate card, scenario analysis is free — so the interface should never show a single number. It shows a curve across volume decades and marks the point where the recommendation changes.</p>
+    <p>Drag the slider below. The recommended target visibly flips, twice.</p>
+  </div>
+
+  <div class="proto">
+    <div class="proto-bar">
+      <span class="live"><i></i>Working prototype</span>
+      <span>Placement &amp; Cost engine · single flow</span>
+    </div>
+    <div class="proto-body">
+      <div class="ctrl-grid">
+        <div class="ctrl">
+          <label class="lb" for="vol">Volume · messages / month</label>
+          <span class="val" id="volOut">100,000 <small id="volTag"></small></span>
+          <input type="range" id="vol" min="3" max="7" step="0.02" value="5" aria-describedby="volOut">
+          <div class="hint" style="margin-top:0.3rem">1k &nbsp;—&nbsp; 10M · log scale</div>
+        </div>
+        <div class="ctrl">
+          <label class="lb">Flow characteristics</label>
+          <label class="chk"><input type="checkbox" id="ent"> Uses an <strong>enterprise connector</strong> (SAP, MQ, Oracle)</label>
+          <label class="chk"><input type="checkbox" id="stf" checked> Requires <strong>stateful</strong> durability &amp; run history</label>
+        </div>
+        <div class="ctrl">
+          <label class="lb" for="share">Workflows sharing one plan</label>
+          <input class="numin" type="number" id="share" min="1" max="60" value="20">
+          <div class="hint" style="margin-top:0.4rem">Bin-packing divisor. Set to 1 to price a dedicated plan.</div>
+        </div>
+      </div>
+
+      <div class="cards" id="cards"></div>
+
+      <div class="chartwrap">
+        <svg id="chart" viewBox="0 0 720 300" role="img" aria-labelledby="chartTitle">
+          <title id="chartTitle">Monthly cost against message volume for four candidate placements, log-log axes</title>
+        </svg>
+        <div class="legend">
+          <span><i style="border-color:var(--brass)"></i>Logic Apps Consumption</span>
+          <span><i style="border-color:var(--ink-3)"></i>Logic Apps Standard · dedicated</span>
+          <span><i style="border-color:var(--teal);border-top-style:dashed"></i>Logic Apps Standard · shared plan</span>
+          <span><i style="border-color:var(--teal)"></i>Function + Service Bus</span>
+        </div>
+      </div>
+
+      <div class="flip" id="flip"></div>
+      <p class="hint" style="margin-top:0.9rem">Illustrative rate constants — enterprise connector actions $0.001, standard connector actions $0.000125, built-in actions $0.000025, WS1 plan $180/month, Service Bus Standard base $10/month, twelve built-in and two connector actions per message. Consumption meters every action; Standard includes built-in service-provider connectors in the plan and meters only enterprise connectors; the shared plan steps up to a dedicated plan past 2M messages/month. Production pricing reads the Azure Retail Prices API for the customer's own region. This prices <strong>run cost only</strong> — engineering effort and team skills are a separate axis, which is why the cheapest curve is not automatically the recommendation a human should accept.</p>
+    </div>
+  </div>
+
+  <div class="col">
+    <h3>What the curves reveal</h3>
+    <p>At default settings the recommendation flips twice, and both flips are the kind of thing a spreadsheet estimate misses. Around <strong>17,000 messages a month</strong> the per-action Consumption meter overtakes a shared plan — so the answer stops being "pay per use" and becomes <em>share a host you already own</em>. Then at roughly <strong>2.1 million</strong> the shared plan runs out of capacity, steps up to a dedicated plan, and a Function with Service Bus becomes cheapest instead.</p>
+    <p>Below that first flip, <strong>cost is almost entirely fixed</strong> — a WS1 plan, an APIM tier, an Integration Account — and per-message meters are pennies. A tool that answers "use Logic Apps, $180 a month" for a ten-thousand-message flow is giving actively harmful advice, and across fifty applications it gives it fifty times. Set the sharing divisor to 1 to see that dedicated plan lose at every volume below two million.</p>
+    <p>Now turn on the enterprise connector. The two flips collapse into one at about <strong>7,000 messages a month</strong>, straight to the Function, because that meter applies to both Logic Apps options and to neither Function. On a high-volume SAP or MQ integration that single toggle outweighs every other placement decision — and it is invisible to any tool that does not model connector class.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 10 ═══════════════ -->
+<section id="s10" data-label="§10 Diagram generation">
+  <div class="sechead"><span class="num">§ 10</span><h2>Diagram generation</h2></div>
+  <div class="col">
+    <p>Both diagrams come from the graph, not from a model's imagination. The IR dependency graph <em>is</em> the as-is topology; <code>placement.json</code> <em>is</em> the proposed topology. Rendering both views from one source graph is what guarantees they are genuinely comparable — the thing hand-drawn before-and-after diagrams never manage, because they are drawn months apart by different people.</p>
+    <p>Layout is deterministic: <strong>C4 / Structurizr DSL → Mermaid</strong> for the in-product view, plus <strong>draw.io XML with the Azure icon set</strong> for the stakeholder deck people actually present. The language model contributes grouping labels and narrative prose only — never node positions, never edges. An invented edge in an architecture diagram is a lie that survives review, because diagrams are trusted more than the text around them.</p>
+    <h4>Diagram set per case</h4>
+    <ul>
+      <li><strong>As-is topology</strong> — orchestrations, ports, adapters, MessageBox subscriptions, external systems, with dead artefacts greyed rather than deleted so reviewers can see what was retired.</li>
+      <li><strong>Proposed topology</strong> — the same flows placed onto Azure services, colour-coded by service class.</li>
+      <li><strong>Landing zone</strong> — the shared platform: APIM, Service Bus namespace, Key Vault, Log Analytics, Integration Account, schema and map registry, common error-handling workflow.</li>
+      <li><strong>Per-flow sequence diagrams</strong> — generated from the IR action DAG, which is exactly what a DAG is for.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════ 11 ═══════════════ -->
+<section id="s11" data-label="§11 UI blueprint">
+  <div class="sechead"><span class="num">§ 11</span><h2>UI blueprint</h2></div>
+  <div class="col">
+    <div class="callout">
+      <span class="k">Governing principle</span>
+      <strong>The UI is a pure projection of the artefact store.</strong> No separate UI state. Every screen renders artefacts an engine has written — which is what makes closing the tab mid-run safe, and what keeps the displayed state truthful rather than optimistic.
+    </div>
+    <p>Above the per-case screens sits a <strong>portfolio dashboard</strong>: all fifty applications with source platform, artefact counts, complexity, disposition split, estimated monthly Azure cost, effort, wave, current stage and parity percentage — plus aggregate TCO against the current BizTalk baseline. That is the only screen an executive sponsor will ever open, so it carries the number they care about.</p>
+  </div>
+
+  <div class="screens">
+    <div class="screen"><span class="sn">01</span><span class="sh">Load project</span><span class="sb">Connect GitHub via an app install, upload a zip or MSI, or point an on-prem agent at a folder. Platform auto-detected, user confirms. Then the optional high-value step: connect <code>BizTalkDTADb</code> for volumetrics, or Anypoint credentials. Live counters for files discovered, artefacts parsed and parse errors.</span></div>
+    <div class="screen"><span class="sn">02</span><span class="sh">Analysis</span><span class="sb">Inventory tree, an interactive dependency graph, and per-flow cards showing archetype, complexity and gaps — each with an editable <strong>disposition</strong> dropdown and a twelve-month traffic sparkline sitting right beside it as the evidence. Bulk actions; a severity-ranked gap list.</span></div>
+    <div class="screen"><span class="sn">03</span><span class="sh">Cost validation</span><span class="sb">Three panes. <strong>Volumetrics input</strong>, every figure tagged <span class="tag meas">measured</span> or <span class="tag">assumed</span> so nobody mistakes a guess for a fact, plus a scenario multiplier and named scenarios. <strong>Placement table</strong> with override dropdowns, live recalculation, and blocking constraint chips. <strong>Portfolio panel</strong> with the bin-packing proposal and a savings waterfall attributing the delta to retire, share-hosts, stateless and connector-swap.</span></div>
+    <div class="screen"><span class="sn">04</span><span class="sh">Design document</span><span class="sb">Section tree with live preview; diagram viewer toggling as-is ↔ proposed; export to Mermaid, draw.io, SVG, PDF and Word. Inline comment threads and per-section regenerate, so a rejected section costs one section rather than the whole document.</span></div>
+    <div class="screen"><span class="sn">05</span><span class="sh">Development</span><span class="sb">A per-flow board — queued, generating, building, tests, PR open, merged, failed — with the agent activity stream, generated file tree, sandbox build output and PR links. Retry or refine a single flow with a note, without re-running the estate.</span></div>
+    <div class="screen"><span class="sn">06</span><span class="sh">Verification</span><span class="sb">Per-flow parity dashboard and a canonicalised message diff viewer: expected against generated, deltas highlighted. Promotion is blocked below the parity threshold, and the block states which flows are holding the wave.</span></div>
+    <div class="screen"><span class="sn">07</span><span class="sh">Deployment</span><span class="sb">Environment matrix, drag-to-assign wave planner, IaC diff preview, pipeline run status, shadow-run comparison, cutover checklist and rollback. After go-live, the actual-against-estimated cost chart that closes the FinOps loop.</span></div>
+  </div>
+
+  <div class="col">
+    <h3>The stage rail</h3>
+    <p>The status bar is the most-looked-at element in the product, so it gets three specific behaviours. Select any node below; use the state control to inspect each treatment.</p>
+  </div>
+
+  <div class="proto">
+    <div class="proto-bar">
+      <span class="live"><i></i>Working prototype</span>
+      <span>Case · <span class="m">CONTOSO-EDI-2026</span></span>
+    </div>
+    <div class="proto-body">
+      <div class="railwrap">
+        <div class="rail" id="rail" role="tablist" aria-label="Migration stages"></div>
+      </div>
+      <div class="detail" id="detail"></div>
+      <div style="margin-top:1rem;display:grid;gap:0.5rem">
+        <span class="lb" style="font-family:var(--sans);font-weight:620;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3)">Set state of selected stage</span>
+        <div class="seg" id="seg" role="group" aria-label="Stage state"></div>
+        <p class="hint">Six states, distinguished by <strong>form as well as colour</strong>: solid ring, dashed ring, dotted ring, animated arc. Note that <em>awaiting input</em> and <em>awaiting approval</em> are brass, not red — they are the two most common real states in a human-gated pipeline, and rendering them as errors makes a working product feel broken.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <ul>
+      <li><strong>Every node carries a badge, not just a colour</strong> — gap count, cost, parity, open PRs — so the rail doubles as the case summary and a sponsor can read status without opening anything.</li>
+      <li><strong>The active node expands</strong> to show the engine, the current sub-task in words, elapsed time and a live-log link. Percentage-only bars misrepresent agent work: <em>"Placement engine · pricing 34 of 112 flows"</em> is honest; <em>"61%"</em> is not.</li>
+      <li><strong>Waiting is not failing.</strong> The two waiting states are visually distinct from failure in hue, ring style and available actions.</li>
+    </ul>
+    <h4>Because engines run for minutes to hours</h4>
+    <p>Live state over SSE or WebSocket; full resumability, so closing the tab and returning shows a truthful picture; Teams or email notification when a gate is reached, since a human-gated pipeline that nobody is watching stalls silently. Partial artefacts stream as they are produced rather than appearing only on completion.</p>
+    <h4>Two cross-cutting surfaces to build early</h4>
+    <p>A <strong>case audit timeline</strong> — who approved what, when, and with what override reason, where rejection reasons feed back into the policy so the product learns from being wrong. And <strong>case fork</strong> — "clone this at ten times the volume" — which is nearly free given that every artefact is already versioned, and which is the feature architects will demo to each other.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 12 ═══════════════ -->
+<section id="s12" data-label="§12 Deterministic vs LLM">
+  <div class="sechead"><span class="num">§ 12</span><h2>Deterministic vs LLM</h2></div>
+  <div class="col">
+    <p>The previous generation of this tooling failed by being purely deterministic — rules cannot cover the long tail of a twenty-year-old integration estate. The obvious overcorrection is to hand everything to a model, which fails differently and less visibly. The split below is the actual design.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>Where the model is allowed to operate, and where it is not.</caption>
+      <thead><tr><th>Concern</th><th>Implementation</th><th>Reasoning</th></tr></thead>
+      <tbody>
+        <tr><td>Parsing source artefacts</td><td><span class="pill teal">deterministic</span></td><td>Grammar is known and fixed; a hallucinated shape corrupts everything downstream</td></tr>
+        <tr><td>IR construction &amp; validation</td><td><span class="pill teal">deterministic</span></td><td>Schema-validated; must be diffable across runs</td></tr>
+        <tr><td>Dependency graph &amp; disposition</td><td><span class="pill teal">deterministic</span></td><td>Derived from parse output and traffic data — arithmetic, not judgement</td></tr>
+        <tr><td>Archetype classification</td><td><span class="pill part">policy first, model for ambiguity</span></td><td>Most flows match a rule; the residue genuinely needs judgement</td></tr>
+        <tr><td>Cost figures</td><td><span class="pill teal">deterministic — always</span></td><td>A wrong number that reads plausibly is the worst failure this product can have</td></tr>
+        <tr><td>Placement rationale &amp; ADR prose</td><td><span class="pill none">model</span></td><td>Explaining a decision the policy already made; the decision is not the model's</td></tr>
+        <tr><td>Diagram topology</td><td><span class="pill teal">deterministic</span></td><td>Comes from the graph; an invented edge survives review because diagrams are over-trusted</td></tr>
+        <tr><td>Diagram labels &amp; narrative</td><td><span class="pill none">model</span></td><td>Naming and grouping is exactly what models are good at</td></tr>
+        <tr><td>Code scaffolding &amp; IaC</td><td><span class="pill teal">templates</span></td><td>Structure is invariant across flows; there is nothing to invent</td></tr>
+        <tr><td>Expression &amp; map translation</td><td><span class="pill none">model + generated tests</span></td><td>Irreducibly a language-translation problem — so it must be test-gated, never trusted</td></tr>
+        <tr><td>Long-tail conversion &amp; custom components</td><td><span class="pill none">model, env-in-loop</span></td><td>Build and test in a sandbox; failures feed straight back to the agent</td></tr>
+        <tr><td>Parity verification</td><td><span class="pill teal">deterministic</span></td><td>The gate cannot be graded by the same kind of system that wrote the code</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col">
+    <p>Read the table as a single rule: <strong>the model proposes and explains; deterministic code decides, prices and verifies.</strong></p>
+  </div>
+</section>
+
+<!-- ═══════════════ 13 ═══════════════ -->
+<section id="s13" data-label="§13 Hard problems">
+  <div class="sechead"><span class="num">§ 13</span><h2>Hard problems</h2></div>
+  <div class="col">
+    <p>Stated openly, because a migration tool that hides these loses the customer at the first orchestration it mangles. Severity is about fidelity risk, not effort.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>Ranked by fidelity risk. The top three have no clean solution anywhere in the market today.</caption>
+      <thead><tr><th>Problem</th><th>Severity</th><th>Why it is hard</th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Correlation sets, parallel convoys, dehydration</strong></td>
+          <td><span class="sev s3"><i></i>critical</span></td>
+          <td>Microsoft states plainly that these have no one-to-one Logic Apps equivalent. They are BizTalk engine semantics, not workflow shapes.</td>
+          <td>Decompose orchestrations into smaller independently testable units; Service Bus sessions plus <code>CorrelationId</code> for grouping; Durable entities for aggregation. Flag every instance for human design review — never auto-convert silently.</td>
+        </tr>
+        <tr>
+          <td><strong>DataWeave translation</strong></td>
+          <td><span class="sev s3"><i></i>critical</span></td>
+          <td>No DataWeave→XSLT or →Liquid converter exists anywhere. DataWeave is a full functional language, so this is language translation, not table lookup.</td>
+          <td>Treat as translation with auto-generated tests: harvest real input/output payload pairs, generate a test per pair, translate, iterate until green. Where it cannot converge, emit a C# function and say so.</td>
+        </tr>
+        <tr>
+          <td><strong>Transactions &amp; compensation</strong></td>
+          <td><span class="sev s3"><i></i>critical</span></td>
+          <td>BizTalk long-running transactions with compensation blocks have no direct analogue; correctness failures here are silent and expensive.</td>
+          <td>Emit an explicit saga design per case for human approval. Never generate compensation logic without a parity test that exercises the failure path.</td>
+        </tr>
+        <tr>
+          <td><strong>Custom .NET pipeline components &amp; assemblies</strong></td>
+          <td><span class="sev s2"><i></i>high</span></td>
+          <td>Often source-less; behaviour only observable through the binary.</td>
+          <td>Decompile, characterise with tests derived from real traffic, rehost as a local function or Container App. Where decompilation fails, wrap and lift the binary unchanged.</td>
+        </tr>
+        <tr>
+          <td><strong>Scripting functoids &amp; complex maps</strong></td>
+          <td><span class="sev s2"><i></i>high</span></td>
+          <td>Inline C#, XSLT call-templates and database lookup functoids inside a visual map.</td>
+          <td>Lift plain XSLT verbatim — the cheapest win available. Extract scripting functoids to functions. Database functoids become explicit lookup steps.</td>
+        </tr>
+        <tr>
+          <td><strong>MessageBox publish/subscribe semantics</strong></td>
+          <td><span class="sev s2"><i></i>high</span></td>
+          <td>Property promotion plus filter subscriptions is a routing model, not a pipeline; it has no single Azure counterpart.</td>
+          <td>Service Bus topics with subscription rules; promoted properties become message properties. Usually <em>cheaper</em> than the original — routing stops consuming compute.</td>
+        </tr>
+        <tr>
+          <td><strong>EDI &amp; trading-partner configuration</strong></td>
+          <td><span class="sev s1"><i></i>moderate</span></td>
+          <td>High volume of fiddly configuration; agreements, envelopes, control numbers.</td>
+          <td>Mechanical migration into one shared Integration Account. Tedious rather than risky — good automation target.</td>
+        </tr>
+        <tr>
+          <td><strong>Model non-determinism</strong></td>
+          <td><span class="sev s1"><i></i>moderate</span></td>
+          <td>The same input can produce different code across runs, which is unacceptable in an audited migration.</td>
+          <td>Deterministic scaffolding constrains the search space; parity gates catch the rest; every generation is versioned and diffable against its predecessor.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════ 14 ═══════════════ -->
+<section id="s14" data-label="§14 Verification">
+  <div class="sechead"><span class="num">§ 14</span><h2>Verification</h2></div>
+  <div class="col">
+    <p class="lede">Nobody in this market publishes a parity number. That absence is the moat.</p>
+    <p>Industry practice on model-driven migration has converged on the same conclusion from several directions: generated code is validated by <strong>replaying real inputs and checking equivalence inside a live environment</strong>, with failures fed back to the agent — not by reading the diff and feeling reassured.</p>
+    <h4>The harness</h4>
+    <ol>
+      <li><strong>Harvest golden pairs.</strong> Real input and output message pairs from the source estate — BizTalk tracking history, Mule logs. These are the specification, and they already exist.</li>
+      <li><strong>Replay locally.</strong> Functions Core Tools, Azurite and Docker reproduce the generated flow without touching Azure, so the loop is fast and free.</li>
+      <li><strong>Canonicalise, then diff.</strong> Normalise namespace prefixes, attribute order, whitespace, key order and timestamps before comparing, otherwise every diff is noise and the harness gets ignored.</li>
+      <li><strong>Score and gate.</strong> Publish parity per flow, and block promotion below threshold. A flow at 100% parity over 300 golden cases is a migration a client can sign off; a flow at 74% is a conversation.</li>
+      <li><strong>Feed failures back.</strong> The failing case, expected output and actual output go to the development agent as the next iteration's input — the environment closes the loop rather than a human transcribing it.</li>
+    </ol>
+    <div class="callout">
+      <span class="k">Why this is commercially decisive</span>
+      Migration projects do not stall on code generation. They stall in the six months of regression testing after it, where nobody can prove the new system behaves like the old one. A tool that arrives with 300 replayed cases per flow and a published parity score is selling <strong>the end of that six months</strong> — which is worth far more than the conversion itself.
+    </div>
+    <h4>Beyond parity</h4>
+    <p>Contract tests against generated OpenAPI for anything fronted by APIM; schema validation on every emitted map; a load smoke test to confirm the placement's throughput assumption actually holds; and <strong>shadow running</strong> at cutover — BizTalk and Azure processing the same live traffic in parallel, outputs compared continuously, until the parity evidence is boring.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 15 ═══════════════ -->
+<section id="s15" data-label="§15 Fork strategy">
+  <div class="sechead"><span class="num">§ 15</span><h2>Fork strategy</h2></div>
+  <div class="col">
+    <p>Concretely, against the upstream repository layout. The first task is not code — it is confirming the licence permits a commercial fork, and that the parser and IR modules can actually be lifted out of the extension host.</p>
+  </div>
+  <div class="tw">
+    <table>
+      <caption>Upstream is a strong foundation for roughly half of what the product needs.</caption>
+      <thead><tr><th>Upstream</th><th>Action</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr><td class="t">src/parsers/biztalk/**</td><td><span class="pill done">keep</span></td><td>The complete reference implementation, and the pattern every later parser copies</td></tr>
+        <tr><td class="t">src/ir/**</td><td><span class="pill part">keep + extend</span></td><td>Adopt the schema wholesale; add the <code>targetPlan</code> layer and volumetrics annotations</td></tr>
+        <tr><td class="t">src/parsers/mulesoft/ (stub)</td><td><span class="pill none">replace</span></td><td>Real parser: flows, subflows, connector configs, error handlers, properties, <code>pom.xml</code>, DataWeave extraction</td></tr>
+        <tr><td class="t">resources/skills/** (13 per platform)</td><td><span class="pill part">keep as assets</span></td><td>Plain Markdown, so they survive the move off Copilot untouched</td></tr>
+        <tr><td class="t">src/copilot/** · VS Code LM API</td><td><span class="pill none">replace</span></td><td><code>ILlmProvider</code> over the Claude API server-side; VS Code LM API stays as an optional local provider</td></tr>
+        <tr><td class="t">src/stages/**</td><td><span class="pill part">refactor</span></td><td>Strip <code>vscode</code> imports; re-expose as a library the SaaS API and the extension both call</td></tr>
+        <tr><td class="t">Extension host, webviews, commands</td><td><span class="pill neu">demote</span></td><td>Becomes one client of the core, not the home of the engine</td></tr>
+        <tr><td>—</td><td><span class="pill teal">add</span></td><td>Placement &amp; Cost engine · rate-card client · policy YAML · volumetrics harvester · multi-target emitters · parity harness · case store · orchestrator · web UI</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col">
+    <p>Also worth mining rather than reinventing: <strong>BizTalkMigrationStarter</strong>'s three deterministic converters, which are further along on <code>.odx</code> shape mapping and <code>.btm</code>→Data Mapper than anything we would write in a first pass; and <strong>mule-migration-assistant</strong>'s Task/Step architecture with SPI discovery and its machine-readable gap report, which is the right shape for our emitters and should be copied deliberately.</p>
+  </div>
+</section>
+
+<!-- ═══════════════ 16 ═══════════════ -->
+<section id="s16" data-label="§16 Roadmap">
+  <div class="sechead"><span class="num">§ 16</span><h2>POC → SaaS roadmap</h2></div>
+  <div class="col">
+    <p>Phased on exit criteria rather than dates. The important decision is in P1: <strong>the first sellable unit contains no code generation at all.</strong></p>
+    <div class="phase">
+      <span class="pk">P0<br>Spike</span>
+      <span class="pb">Confirm the upstream licence permits a commercial fork. Run the BizTalk sample end to end. Prove <code>src/parsers</code> and <code>src/ir</code> lift cleanly out of <code>vscode</code>. Catalogue the 13 skills.
+      <span class="exit">Exit · a headless CLI produces valid <code>ir.json</code> from a real BizTalk project.</span></span>
+    </div>
+    <div class="phase">
+      <span class="pk">P1<br>Assessment</span>
+      <span class="pb"><b>Engines 0–3 only.</b> Ingest → IR → disposition and archetypes → priced placement with cost curves and crossover thresholds → as-is and proposed diagrams → assessment report. Deliberately first because it delivers value with <b>zero dependence on conversion accuracy</b>, demos in one meeting, and is a natural paid entry point.
+      <span class="exit">Exit · a stakeholder-ready cost and architecture pack for three representative applications that an independent architect agrees with.</span></span>
+    </div>
+    <div class="phase">
+      <span class="pk">P1b<br>Conversion</span>
+      <span class="pb">Engines 5–6 for those same three applications: multi-target emitters plus the replay harness.
+      <span class="exit">Exit · a published per-flow parity number on real golden messages.</span></span>
+    </div>
+    <div class="phase">
+      <span class="pk">P2<br>MuleSoft</span>
+      <span class="pb">Real Mule parser replacing the stub. DataWeave translation with auto-generated tests. Second source platform proves the IR is actually neutral rather than BizTalk-shaped.
+      <span class="exit">Exit · a Mule application through the full pipeline at comparable parity.</span></span>
+    </div>
+    <div class="phase">
+      <span class="pk">P3<br>SaaS</span>
+      <span class="pb">Server-side engine, tenant isolation, repo ingest, case store, run history, RBAC, approval gates, the web UI, and a pricing model. Engines 4, 7, 8 and 9 land here.
+      <span class="exit">Exit · a customer completes a wave without anyone from the team touching their environment.</span></span>
+    </div>
+    <div class="phase">
+      <span class="pk">P4<br>Expansion</span>
+      <span class="pb">MuleSoft <em>target</em> emitter, which unlocks BizTalk → MuleSoft and proves the hub-and-spoke claim. Then TIBCO, Boomi and IIB parsers — upstream already publishes IR examples for all three as templates.
+      <span class="exit">Exit · two targets and four sources through one unchanged IR.</span></span>
+    </div>
+
+    <h3>What is actually being sold</h3>
+    <ul>
+      <li><strong>Multi-target placement with priced rationale</strong> — the free tool converts to Logic Apps; this one decides where each flow belongs and defends it with a number.</li>
+      <li><strong>Portfolio economics</strong> — disposition, bin-packing, savings waterfall, TCO against the incumbent baseline.</li>
+      <li><strong>Parity-tested output</strong> — the six months of regression testing, removed.</li>
+      <li><strong>Audit-grade traceability</strong> — source artefact → generated file → test evidence → approver, which regulated customers require and nobody else supplies.</li>
+      <li><strong>No Copilot dependency</strong>, with a VPC or on-prem deployment option for customers who cannot send code to a vendor cloud.</li>
+      <li><strong>A calibrated estimator</strong> that improves with every completed wave — the one asset a later competitor cannot copy.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════ 17 ═══════════════ -->
+<section id="s17" data-label="§17 Risks &amp; sources">
+  <div class="sechead"><span class="num">§ 17</span><h2>Risks, open questions, sources</h2></div>
+  <div class="col">
+    <h4>Risks worth naming now</h4>
+    <ul>
+      <li><strong>Fidelity ceiling.</strong> Convoys, correlation sets and compensation set a hard limit on automation. The product must be honest about it in the UI, not just in the sales conversation — a tool that overclaims loses the account on the first bad orchestration.</li>
+      <li><strong>DataWeave has no prior art.</strong> Budget for this as research, not as a feature, and gate it behind generated tests.</li>
+      <li><strong>Microsoft owns the destination and ships a free tool.</strong> They can absorb any pure-conversion advantage. Lead with placement, economics and assurance.</li>
+      <li><strong>Volumetrics access is a sales dependency.</strong> The best output requires the customer's tracking database. Design the manual-entry path to be genuinely good, not a fallback that feels like a downgrade.</li>
+      <li><strong>Cost model drift.</strong> Azure pricing and SKUs change; the rate-card client and the crossover thresholds need their own regression tests, or the tool will quietly start lying.</li>
+    </ul>
+    <h4>Open questions for the next session</h4>
+    <ul>
+      <li>Upstream licence terms — the P0 gate on the entire fork strategy.</li>
+      <li>Pricing model: per application, per flow, per assessment, or a share of measured savings? The last is the most aligned and the hardest to administer.</li>
+      <li>Do we support Logic Apps Hybrid and on-prem targets in P1, or defer? It changes the emitter matrix and the monitoring story (OpenTelemetry rather than App Insights).</li>
+      <li>Is BizTalk → MuleSoft a genuine market or a positioning claim? It changes whether the IR neutrality investment pays for itself.</li>
+    </ul>
+
+    <h3>Sources</h3>
+    <dl class="src">
+      <dt>Fork target</dt>
+      <dd><a href="https://github.com/Azure/logicapps-migration-agent">Azure/logicapps-migration-agent</a> · <a href="https://learn.microsoft.com/en-us/azure/logic-apps/migration/migration-agent-overview">Migration agent overview</a> · <a href="https://learn.microsoft.com/en-us/azure/logic-apps/migration/migration-agent-extend">Extending with custom parsers</a> · <a href="https://marketplace.visualstudio.com/items?itemName=ms-azuretools.logicapps-migration-agent">Marketplace listing</a></dd>
+      <dt>Prior implementations</dt>
+      <dd><a href="https://github.com/haroldcampos/BizTalkMigrationStarter">BizTalkMigrationStarter</a> · <a href="https://techcommunity.microsoft.com/blog/integrationsonazureblog/a-biztalk-migration-tool-from-orchestrations-to-logic-apps-workflows/4494876">From orchestrations to Logic Apps workflows</a> · <a href="https://github.com/Azure/aimbiztalk">aimbiztalk</a> · <a href="https://github.com/Azure/aimazure">aimazure</a> · <a href="https://github.com/mulesoft/mule-migration-assistant">mule-migration-assistant</a></dd>
+      <dt>Concept mapping</dt>
+      <dd><a href="https://learn.microsoft.com/en-us/azure/logic-apps/biztalk-server-migration-overview">BizTalk → Logic Apps Standard feature matchup</a> · <a href="https://techcommunity.microsoft.com/blog/integrationsonazureblog/implementing--migrating-the-biztalk-server-aggregator-pattern-to-azure-logic-app/4495107">Migrating the aggregator pattern</a> · <a href="https://www.hortoncloud.com/post/migrating-from-mulesoft-to-azure-without-compromising-your-3-layered-connectivity-architecture">MuleSoft three layers on Azure</a> · <a href="https://www.valoremreply.com/resources/insights/blog/uk/mulesoft-to-azure-integration-services-complete-migration-guide/">MuleSoft → Azure Integration Services</a></dd>
+      <dt>Cost engine</dt>
+      <dd><a href="https://learn.microsoft.com/en-us/rest/api/cost-management/retail-prices/azure-retail-prices">Azure Retail Prices REST API</a> · <a href="https://learn.microsoft.com/en-us/azure/logic-apps/logic-apps-pricing">Logic Apps usage metering &amp; billing</a> · <a href="https://learn.microsoft.com/en-us/azure/logic-apps/single-tenant-overview-compare">Standard vs Consumption</a> · <a href="https://learn.microsoft.com/en-us/azure/logic-apps/logic-apps-limits-and-config">Limits &amp; configuration</a> · <a href="https://azure-cost-management-playbook.turbo360.com/docs/azure-logic-app-standard-cost-optimization">Standard cost-optimisation playbook</a> · <a href="https://caleta.io/blog/logic-apps-vs-functions-cost/">Logic Apps vs Functions per transaction</a></dd>
+      <dt>Method</dt>
+      <dd><a href="https://arxiv.org/pdf/2602.09944">Environment-in-the-Loop: rethinking code migration with LLM-based agents</a> · <a href="https://www.aviator.co/blog/llm-agents-for-code-migration-a-real-world-case-study/">LLM agents for code migration: a case study</a> · <a href="https://arxiv.org/pdf/2412.05075">Towards the interoperability of low-code platforms</a> · <a href="https://serverlessworkflow.io/">Serverless Workflow specification</a> · <a href="https://developers.redhat.com/articles/2023/09/20/which-camel-dsl-should-you-use">Which Camel DSL should you use?</a></dd>
+      <dt>Market</dt>
+      <dd><a href="https://tellestia.com/blog/migrating-from-microsoft-biztalk-to-ipaas-wso2-boomi-mulesoft/">BizTalk to iPaaS</a> · <a href="https://www.beyondbiztalk.com/">BeyondBizTalk</a> · <a href="https://www.directionsonmicrosoft.com/in-brief/tools-ai-help-migrate-apps-from-biztalk-to-logic-apps/">Tools and AI help migrate BizTalk apps</a></dd>
+    </dl>
+  </div>
+</section>
+
+<footer>
+  Brainstorm and landscape study · July 2026 · no implementation. Cost figures throughout are illustrative model output, not quotations.
+</footer>
+</main>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   Sticky section indicator
+   ══════════════════════════════════════════════════════════ */
+(function () {
+  var out = document.getElementById('nowsec');
+  var secs = [].slice.call(document.querySelectorAll('section[data-label]'));
+  if (!('IntersectionObserver' in window)) return;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) out.innerHTML = e.target.getAttribute('data-label');
+    });
+  }, { rootMargin: '-15% 0px -70% 0px' });
+  secs.forEach(function (s) { io.observe(s); });
+})();
+
+/* ══════════════════════════════════════════════════════════
+   PROTOTYPE 1 — cost calculator
+   Illustrative rate constants. Production reads the Azure
+   Retail Prices API for the customer's region.
+   ══════════════════════════════════════════════════════════ */
+(function () {
+  var R = {
+    builtinPerMsg: 12, stdConnPerMsg: 2,
+    pBuiltin: 0.000025, pStdConn: 0.000125, pEntConn: 0.001,
+    ws1: 180, sharedCapacity: 2e6,
+    sbBase: 10, sbOpsPerMsg: 0.05 / 1e6 * 2,
+    funcPerMsg: 0.0000004, storagePerMsg: 0.0000005
+  };
+
+  var CANDS = [
+    { id: 'cons',  name: 'Logic Apps\nConsumption',        colour: 'var(--brass)', dash: false },
+    { id: 'ded',   name: 'Logic Apps Standard\ndedicated WS1', colour: 'var(--ink-3)', dash: false },
+    { id: 'shr',   name: 'Logic Apps Standard\nshared plan',   colour: 'var(--teal)',  dash: true  },
+    { id: 'fn',    name: 'Function +\nService Bus',         colour: 'var(--teal)',  dash: false }
+  ];
+
+  function costs(m, ent, stf, share) {
+    /* Consumption meters every action. Standard includes built-in
+       service-provider connectors in the plan and meters only
+       enterprise/managed connectors. */
+    var entPer = ent ? R.pEntConn : 0;
+    var storage = stf ? R.storagePerMsg : 0;
+    var sharedFixed = m > R.sharedCapacity ? R.ws1 : R.ws1 / Math.max(1, share);
+    return {
+      cons: m * (R.builtinPerMsg * R.pBuiltin + R.stdConnPerMsg * R.pStdConn + entPer),
+      ded:  R.ws1 + m * (entPer + storage),
+      shr:  sharedFixed + m * (entPer + storage),
+      fn:   R.sbBase + m * (R.funcPerMsg + R.sbOpsPerMsg)
+    };
+  }
+  function best(c) {
+    return Object.keys(c).reduce(function (a, b) { return c[b] < c[a] ? b : a; });
+  }
+  function label(id) { return CANDS.filter(function (x) { return x.id === id; })[0].name.replace('\n', ' '); }
+  function money(v) {
+    if (v >= 1000) return '$' + Math.round(v).toLocaleString('en-US');
+    if (v >= 10) return '$' + v.toFixed(0);
+    return '$' + v.toFixed(2);
+  }
+  function msgs(v) {
+    if (v >= 1e6) return (v / 1e6).toFixed(v >= 1e7 ? 0 : 1).replace('.0', '') + 'M';
+    if (v >= 1e3) return Math.round(v / 1e3) + 'k';
+    return String(Math.round(v));
+  }
+
+  var volEl = document.getElementById('vol'),
+      volOut = document.getElementById('volOut'),
+      volTag = document.getElementById('volTag'),
+      entEl = document.getElementById('ent'),
+      stfEl = document.getElementById('stf'),
+      shareEl = document.getElementById('share'),
+      cardsEl = document.getElementById('cards'),
+      flipEl = document.getElementById('flip'),
+      svg = document.getElementById('chart');
+
+  var W = 720, H = 300, ML = 54, MR = 12, MT = 14, MB = 40;
+  var X0 = 3, X1 = 7;          /* log10 msgs */
+  var Y0 = -0.4, Y1 = 4.6;     /* log10 dollars */
+  function px(lx) { return ML + (lx - X0) / (X1 - X0) * (W - ML - MR); }
+  function py(ly) { return H - MB - (ly - Y0) / (Y1 - Y0) * (H - MT - MB); }
+  function ns(t, a) {
+    var e = document.createElementNS('http://www.w3.org/2000/svg', t);
+    for (var k in a) e.setAttribute(k, a[k]);
+    return e;
+  }
+
+  function render() {
+    var lv = parseFloat(volEl.value),
+        m = Math.pow(10, lv),
+        ent = entEl.checked, stf = stfEl.checked,
+        share = parseInt(shareEl.value, 10) || 1;
+
+    volOut.firstChild.nodeValue = Math.round(m).toLocaleString('en-US') + ' ';
+    volTag.className = 'tag';
+    volTag.textContent = 'assumed';
+
+    var c = costs(m, ent, stf, share), b = best(c);
+
+    /* cards */
+    cardsEl.innerHTML = '';
+    CANDS.forEach(function (cd) {
+      var d = document.createElement('div');
+      d.className = 'card' + (cd.id === b ? ' rec' : '');
+      var note = '';
+      if (cd.id === 'shr') note = m > R.sharedCapacity
+        ? 'Capacity exceeded — now priced as a dedicated plan.'
+        : 'Built-in connectors included in the plan; cost is 1/' + share + ' of a WS1.';
+      if (cd.id === 'fn') note = ent ? 'Native SDK — no connector meter at all.' : 'Service Bus base dominates at low volume.';
+      if (cd.id === 'cons') note = ent ? 'Every enterprise connector action is metered.' : 'Every action is metered — scales linearly forever.';
+      if (cd.id === 'ded') note = 'Fixed plan cost, near-flat against volume.';
+      d.innerHTML =
+        '<span class="swatch" style="background:' + cd.colour + '"></span>' +
+        '<div class="ct">' + cd.name.replace('\n', '<br>') + '</div>' +
+        '<div class="cv">' + money(c[cd.id]) + '<span style="font-size:0.62rem;color:var(--ink-3)"> /mo</span></div>' +
+        (note ? '<div class="cn">' + note + '</div>' : '');
+      cardsEl.appendChild(d);
+    });
+
+    /* chart */
+    while (svg.childNodes.length > 1) svg.removeChild(svg.lastChild);
+
+    for (var gx = X0; gx <= X1; gx++) {
+      svg.appendChild(ns('line', { x1: px(gx), y1: py(Y0), x2: px(gx), y2: py(Y1), stroke: 'var(--rule-soft)', 'stroke-width': 1 }));
+      var tx = ns('text', { x: px(gx), y: H - MB + 16, fill: 'var(--ink-3)', 'font-size': 10, 'font-family': 'var(--mono)', 'text-anchor': 'middle' });
+      tx.textContent = msgs(Math.pow(10, gx));
+      svg.appendChild(tx);
+    }
+    [0, 1, 2, 3, 4].forEach(function (gy) {
+      svg.appendChild(ns('line', { x1: px(X0), y1: py(gy), x2: px(X1), y2: py(gy), stroke: 'var(--rule-soft)', 'stroke-width': 1 }));
+      var ty = ns('text', { x: ML - 8, y: py(gy) + 3.5, fill: 'var(--ink-3)', 'font-size': 10, 'font-family': 'var(--mono)', 'text-anchor': 'end' });
+      ty.textContent = '$' + Math.pow(10, gy).toLocaleString('en-US');
+      svg.appendChild(ty);
+    });
+    var ax = ns('text', { x: px(X1), y: H - 6, fill: 'var(--ink-3)', 'font-size': 9.5, 'font-family': 'var(--mono)', 'text-anchor': 'end' });
+    ax.textContent = 'messages / month →';
+    svg.appendChild(ax);
+
+    var SAMPLES = 90, series = {};
+    CANDS.forEach(function (cd) { series[cd.id] = []; });
+    var flips = [], prev = null;
+    for (var i = 0; i <= SAMPLES; i++) {
+      var l = X0 + (X1 - X0) * i / SAMPLES, mm = Math.pow(10, l), cc = costs(mm, ent, stf, share);
+      CANDS.forEach(function (cd) {
+        series[cd.id].push(px(l) + ',' + py(Math.log10(Math.max(cc[cd.id], Math.pow(10, Y0)))));
+      });
+      var bb = best(cc);
+      if (prev && bb !== prev) flips.push({ at: mm, from: prev, to: bb, x: px(l) });
+      prev = bb;
+    }
+    CANDS.forEach(function (cd) {
+      svg.appendChild(ns('polyline', {
+        points: series[cd.id].join(' '), fill: 'none', stroke: cd.colour,
+        'stroke-width': cd.id === b ? 2.6 : 1.6,
+        'stroke-dasharray': cd.dash ? '5 3' : 'none',
+        opacity: cd.id === b ? 1 : 0.65
+      }));
+    });
+
+    flips.forEach(function (f) {
+      svg.appendChild(ns('line', { x1: f.x, y1: py(Y0), x2: f.x, y2: py(Y1), stroke: 'var(--brass)', 'stroke-width': 1, 'stroke-dasharray': '2 3', opacity: 0.8 }));
+      var t = ns('text', { x: f.x + 4, y: py(Y1) + 11, fill: 'var(--brass)', 'font-size': 9.5, 'font-family': 'var(--mono)' });
+      t.textContent = 'flip · ' + msgs(f.at);
+      svg.appendChild(t);
+    });
+
+    var cx = px(lv);
+    svg.appendChild(ns('line', { x1: cx, y1: py(Y0), x2: cx, y2: py(Y1), stroke: 'var(--ink)', 'stroke-width': 1.2 }));
+    svg.appendChild(ns('circle', { cx: cx, cy: py(Math.log10(Math.max(c[b], Math.pow(10, Y0)))), r: 4.5, fill: 'var(--paper)', stroke: 'var(--ink)', 'stroke-width': 2 }));
+
+    /* flip readout */
+    var txt = '<b>' + label(b) + '</b> is cheapest at ' + Math.round(m).toLocaleString('en-US') + ' messages/month — ' + money(c[b]) + '/month. ';
+    if (flips.length) {
+      txt += 'Across the range the recommendation flips ' + flips.length + (flips.length === 1 ? ' time' : ' times') + ': ';
+      txt += flips.map(function (f) { return label(f.from) + ' → <b>' + label(f.to) + '</b> at ≈' + msgs(f.at) + '/month'; }).join('; ') + '.';
+    } else {
+      txt += 'It stays cheapest across the whole 1k–10M range.';
+    }
+    if (ent) txt += ' The enterprise connector meter is doing most of the work here — it applies to both Logic Apps options and to neither Function option.';
+    flipEl.innerHTML = txt;
+  }
+
+  [volEl, entEl, stfEl, shareEl].forEach(function (el) {
+    el.addEventListener('input', render);
+    el.addEventListener('change', render);
+  });
+  render();
+})();
+
+/* ══════════════════════════════════════════════════════════
+   PROTOTYPE 2 — stage rail
+   ══════════════════════════════════════════════════════════ */
+(function () {
+  var ICON = {
+    done:    '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg>',
+    running: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="2.6" fill="currentColor" stroke="none"/></svg>',
+    input:   '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3.5v6"/><circle cx="8" cy="12.4" r="1.05" fill="currentColor" stroke="none"/></svg>',
+    approval:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3.2" y="7" width="9.6" height="6.2" rx="1"/><path d="M5.6 7V5.2a2.4 2.4 0 014.8 0V7"/></svg>',
+    failed:  '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4.6 4.6l6.8 6.8M11.4 4.6l-6.8 6.8"/></svg>',
+    idle:    '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="1.4" fill="currentColor" stroke="none"/></svg>'
+  };
+  var STATE_LABEL = {
+    done: 'complete', running: 'running', input: 'awaiting your input',
+    approval: 'awaiting approval', failed: 'failed', idle: 'not started'
+  };
+  var STAGES = [
+    { k: 'load',    nm: 'Load',    eng: 'Ingest engine',              st: 'done',     bg: '412 artefacts', task: 'Parsed 412 artefacts across 50 applications. 3 files unreadable.', kv: [['Applications','50'],['Parse errors','3'],['Volumetrics','measured']] },
+    { k: 'analyse', nm: 'Analyse', eng: 'Analysis engine',            st: 'done',     bg: '31 gaps',       task: 'Built dependency graph, classified 112 flows, scored 31 gaps.', kv: [['Flows','112'],['To retire','24'],['Gaps','31']] },
+    { k: 'cost',    nm: 'Cost',    eng: 'Placement & Cost engine',    st: 'running',  bg: '34/112',        task: 'Pricing candidate compositions — 34 of 112 flows.', kv: [['Priced so far','$3,180/mo'],['All-Logic-Apps baseline','$14,600/mo'],['Rate card','East US · live']] },
+    { k: 'design',  nm: 'Design',  eng: 'Architecture Design engine', st: 'input',    bg: '2 to confirm',  task: 'Two flows need an owner decision before the proposed topology can be drawn.', kv: [['Diagrams ready','6 of 8'],['ADRs drafted','14'],['Blocked on you','2']] },
+    { k: 'plan',    nm: 'Plan',    eng: 'Planning engine',            st: 'approval', bg: '4 waves',       task: 'Wave plan complete — 4 waves, 112 flows, 340 estimated engineer-days.', kv: [['Waves','4'],['Est. effort','340 d'],['Risks flagged','9']] },
+    { k: 'develop', nm: 'Develop', eng: 'Development engine',         st: 'idle',     bg: '—',             task: 'Waits for plan approval.', kv: [['PRs open','0'],['Flows generated','0'],['Sandbox','idle']] },
+    { k: 'verify',  nm: 'Verify',  eng: 'Verification engine',        st: 'idle',     bg: '—',             task: 'Waits for generated code. 2,840 golden message pairs already harvested.', kv: [['Golden pairs','2,840'],['Parity','—'],['Threshold','98%']] },
+    { k: 'deploy',  nm: 'Deploy',  eng: 'Deployment engine',          st: 'idle',     bg: '—',             task: 'Waits for the parity gate.', kv: [['Environments','3'],['Landing zone','not provisioned'],['Shadow run','not started']] }
+  ];
+  var sel = 2;
+
+  var rail = document.getElementById('rail'),
+      detail = document.getElementById('detail'),
+      seg = document.getElementById('seg');
+
+  function drawRail() {
+    rail.innerHTML = '';
+    STAGES.forEach(function (s, i) {
+      var b = document.createElement('button');
+      b.className = 'node' + (i < STAGES.length - 1 && s.st !== 'idle' ? ' reached' : '');
+      b.setAttribute('data-state', s.st);
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-current', i === sel ? 'true' : 'false');
+      b.setAttribute('aria-label', s.nm + ' — ' + STATE_LABEL[s.st]);
+      b.innerHTML = '<span class="line"></span><span class="dot">' + ICON[s.st] + '</span>' +
+                    '<span class="nm">' + s.nm + '</span><span class="bg">' + s.bg + '</span>';
+      b.addEventListener('click', function () { sel = i; drawRail(); drawDetail(); drawSeg(); });
+      rail.appendChild(b);
+    });
+  }
+
+  function drawDetail() {
+    var s = STAGES[sel];
+    var acts = '';
+    if (s.st === 'approval') acts = '<button class="btn pri">Approve plan</button><button class="btn">Request changes</button><button class="btn">Open plan</button>';
+    else if (s.st === 'input') acts = '<button class="btn pri">Resolve 2 decisions</button><button class="btn">Skip for now</button>';
+    else if (s.st === 'failed') acts = '<button class="btn pri">Retry stage</button><button class="btn dgr">View error</button>';
+    else if (s.st === 'running') acts = '<button class="btn">View live log</button><button class="btn dgr">Cancel run</button>';
+    else if (s.st === 'done') acts = '<button class="btn">View artefacts</button><button class="btn">Re-run stage</button>';
+    else acts = '<button class="btn" disabled style="opacity:.45;cursor:not-allowed">Not yet available</button>';
+
+    var elapsed = s.st === 'running' ? '<span class="el"> · 4m 12s elapsed</span>'
+                : s.st === 'done' ? '<span class="el"> · finished in 6m 03s</span>'
+                : s.st === 'approval' ? '<span class="el"> · waiting 1d 4h</span>'
+                : s.st === 'input' ? '<span class="el"> · waiting 3h 20m</span>' : '';
+
+    detail.innerHTML =
+      '<div class="detail-h"><span class="eng">' + s.eng + '</span>' +
+      '<span class="st s-' + s.st + '">' + STATE_LABEL[s.st] + '</span></div>' +
+      '<div class="detail-b">' +
+      '<div class="task">' + s.task + elapsed + '</div>' +
+      (s.st === 'running' ? '<div class="bar"><i style="width:30%"></i></div>' : '') +
+      '<div class="kv">' + s.kv.map(function (p) { return '<div><b>' + p[1] + '</b>' + p[0] + '</div>'; }).join('') + '</div>' +
+      '<div class="acts">' + acts + '</div>' +
+      '</div>';
+  }
+
+  function drawSeg() {
+    seg.innerHTML = '';
+    Object.keys(STATE_LABEL).forEach(function (k) {
+      var b = document.createElement('button');
+      b.textContent = STATE_LABEL[k];
+      b.setAttribute('aria-pressed', STAGES[sel].st === k ? 'true' : 'false');
+      b.addEventListener('click', function () { STAGES[sel].st = k; drawRail(); drawDetail(); drawSeg(); });
+      seg.appendChild(b);
+    });
+  }
+
+  drawRail(); drawDetail(); drawSeg();
+})();
+</script>

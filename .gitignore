@@ -1,0 +1,48 @@
+# Node / TypeScript (the planned implementation stack)
+node_modules/
+dist/
+build/
+out/
+*.tsbuildinfo
+.npm/
+.pnpm-store/
+coverage/
+
+# Env & secrets — never commit rate cards with account identifiers,
+# tracking-DB connection strings, or tenant credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+local.settings.json
+appsettings.Development.json
+
+# Azure Functions / Logic Apps local runtime
+bin/
+obj/
+.azure/
+azurite/
+__azurite_db*__*
+__blobstorage__/
+__queuestorage__/
+
+# Customer data — case workspaces contain client integration source
+cases/
+workspaces/
+samples/private/
+*.msi
+*.btproj.user
+
+# Editors & OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Scratch
+tmp/
+scratch/
+*.log

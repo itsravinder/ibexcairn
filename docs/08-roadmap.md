@@ -2,6 +2,8 @@
 
 Phased on **exit criteria, not dates**. The important decision is in P1: the first sellable unit contains no code generation at all.
 
+> **Executable breakdown:** this document is the strategic view. The 38 numbered stages with per-stage acceptance checklists are in [10 · Stages](10-stages.md), tracked in [`STAGES.csv`](../STAGES.csv). Phase names map as: P0 → Foundation, P1 → Assessment, P1b → Conversion, P2 → MuleSoft, P3 → SaaS, P4 → Expansion.
+
 ## P0 · Spike and due diligence
 
 - Confirm the upstream licence permits a commercial fork — see [ADR-0001](adr/0001-fork-logicapps-migration-agent.md). **This gates everything below.**

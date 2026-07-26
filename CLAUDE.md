@@ -8,7 +8,15 @@ Read [docs/00-vision.md](docs/00-vision.md) first. It is short and it is the who
 
 ## Current state
 
-Documentation only. No implementation. Do not scaffold code, create package manifests, or start a build until [ADR-0001](docs/adr/0001-fork-logicapps-migration-agent.md) is resolved — the entire architecture depends on whether the upstream licence permits a commercial fork.
+Documentation only. No implementation. Do not scaffold code, create package manifests, or start a build until **S01** (upstream licence review) is resolved — the entire architecture depends on whether the licence permits a commercial fork. See [ADR-0001](docs/adr/0001-fork-logicapps-migration-agent.md).
+
+## Stage tracking
+
+Work is broken into 38 stages in [`STAGES.csv`](STAGES.csv), with acceptance checklists per stage in [docs/10-stages.md](docs/10-stages.md). Same format as the `minerva` project plus a `phase` column.
+
+Per stage: set `status=in_progress` → implement → tick every checklist box in `10-stages.md` → set `status=done`, `verified=yes` → commit the work → record the short hash in `STAGES.csv` in a separate `chore:` commit.
+
+A stage is not done until its checklist is complete — those boxes are acceptance criteria, not suggestions. `verified=yes` means someone confirmed the exit criteria, not that the code compiles.
 
 ## Load-bearing decisions — do not quietly reverse these
 

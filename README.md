@@ -37,7 +37,19 @@ Ibex Cairn reverses the usual order of operations:
 
 ## Status
 
-**Pre-P0.** This repository currently contains research and architecture documentation only. No implementation has started. The first gate is a licence review of the upstream project we intend to fork — see [ADR-0001](docs/adr/0001-fork-logicapps-migration-agent.md).
+**Pre-S01.** Research and architecture documentation only — no implementation has started.
+
+The build is broken into **38 stages across six phases** ([docs/10-stages.md](docs/10-stages.md), tracked in [`STAGES.csv`](STAGES.csv)) with five sign-off gates:
+
+| Gate | Exit criterion |
+|---|---|
+| **G0 Foundation** | A headless CLI produces valid `ir.json` from a real BizTalk project, no `vscode` dependency |
+| **G1 Assessment** | A cost and architecture pack for three real applications that an *independent architect agrees with* |
+| **G2 Conversion** | A published per-flow parity number on real golden messages |
+| **G3 SaaS** | A customer completes a wave without our team touching their environment |
+| **G4 Expansion** | Two targets and four sources through one unchanged IR |
+
+**S01 blocks everything**: a licence review of the upstream project we intend to fork. See [ADR-0001](docs/adr/0001-fork-logicapps-migration-agent.md).
 
 ## Documentation
 
@@ -51,8 +63,10 @@ Ibex Cairn reverses the usual order of operations:
 | [05 · UI blueprint](docs/05-ui-blueprint.md) | Screens and the stage rail specification |
 | [06 · Hard problems](docs/06-hard-problems.md) | Fidelity risks ranked, with mitigations |
 | [07 · Verification](docs/07-verification.md) | Golden replay, parity scoring, shadow running |
-| [08 · Roadmap](docs/08-roadmap.md) | P0 → P4 with exit criteria |
+| [08 · Roadmap](docs/08-roadmap.md) | Phases with exit criteria, risks, open questions |
 | [09 · Naming](docs/09-naming.md) | Name decision, trademark collisions, outstanding legal work |
+| [10 · Stages](docs/10-stages.md) | **38 stages with per-stage checklists and phase gates** |
+| [`STAGES.csv`](STAGES.csv) | Machine-readable stage tracker — status, dependencies, commit hashes |
 | [ADRs](docs/adr/) | Architecture decision records |
 | [Dossier](docs/dossier.html) | The full illustrated brief, including a working cost calculator |
 

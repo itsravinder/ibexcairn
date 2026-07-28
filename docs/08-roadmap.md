@@ -64,6 +64,9 @@ MuleSoft **target** emitter, unlocking BizTalk → MuleSoft and proving the hub-
 | Logic Apps Hybrid / on-premises targets in P1, or defer? | Changes the emitter matrix and the monitoring story — OpenTelemetry rather than Application Insights |
 | Is BizTalk → MuleSoft a genuine market or a positioning claim? | Determines whether the IR-neutrality investment pays for itself |
 | Marketplace and co-sell path with Microsoft | Affects naming, framing, and whether we are a partner or a competitor. Related: never use Microsoft marks in product naming ([09 · Naming](09-naming.md)) |
+| **Consume upstream's converter, or build competing emitters?** | [ADR-0006](adr/0006-consume-upstream-converter.md), Proposed. Changes S19's scope and our partner-vs-competitor stance |
+| **Override model and pattern catalogue shape** | [ADR-0007](adr/0007-override-model-and-pattern-catalogue.md), Proposed. Adds scope to eight stages |
+| **BizTalk Server support lifecycle end dates** | Portability tier 5 ("leave the flow on BizTalk") is only defensible until then, and the deadline is the strongest argument in the sales conversation. **Confirm from Microsoft's lifecycle page — do not quote from memory** |
 
 ## Immediate next actions
 

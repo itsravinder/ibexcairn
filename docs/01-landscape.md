@@ -87,6 +87,18 @@ Microsoft also states plainly that **correlation sets, parallel convoys, dehydra
 
 For MuleSoft, the API-led layers map cleanly: **Experience → API Management, Process → Logic Apps, System → Functions / Service Bus** ([reference](https://www.hortoncloud.com/post/migrating-from-mulesoft-to-azure-without-compromising-your-3-layered-connectivity-architecture)).
 
+## Legacy .NET is better supported than expected
+
+Verified 26 July 2026, and it materially changes how much of a 2010-vintage estate is reachable:
+
+- [.NET Framework custom code for Logic Apps Standard is GA](https://techcommunity.microsoft.com/blog/integrationsonazureblog/-net-framework-custom-code-for-azure-logic-apps-standard-reaches-general-availab/3954619) — Standard workflows call **.NET Framework 4.7.2** assemblies unchanged, and **can call them from inside XSLT maps** ([docs](https://learn.microsoft.com/en-us/azure/logic-apps/create-run-custom-code-functions)). Microsoft built this specifically for BizTalk migration
+- [Azure Functions isolated worker supports .NET Framework 4.8](https://learn.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide) with process isolation, so legacy dependency versions cannot collide with the host. Microsoft states there is no plan to end that support
+- The fork target already ships a matching skill: [`resources/skills/dotnet-local-functions-logic-apps/biztalk/SKILL.md`](https://github.com/Azure/logicapps-migration-agent/blob/main/resources/skills/dotnet-local-functions-logic-apps/biztalk/SKILL.md)
+
+**Caveat that affects our own infrastructure:** the Logic Apps Standard custom-functions tooling is **Windows-only** (VS Code on Windows), so our build agents cannot be Linux-only.
+
+Consequence: the blocker is Windows-platform coupling, not the framework version. See [11 · Legacy portability](11-legacy-portability.md) and [ADR-0008](adr/0008-portability-ladder.md).
+
 ## Confirmed gaps in the market
 
 **No DataWeave converter exists.** Searching for DataWeave → XSLT or DataWeave → Liquid translation returns nothing but documentation of the three languages separately. DataWeave is a full functional language, so this is a language-translation problem, not a mapping table. Budget it as research.

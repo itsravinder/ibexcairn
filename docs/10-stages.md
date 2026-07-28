@@ -1,6 +1,8 @@
 # 10 · Stages and checklists
 
-38 stages across six phases, tracked in [`STAGES.csv`](../STAGES.csv). Same column format as the `minerva` project, with one added `phase` column because this build has gated phases rather than one continuous run.
+40 stages across six phases, tracked in [`STAGES.csv`](../STAGES.csv). Same column format as the `minerva` project, with one added `phase` column because this build has gated phases rather than one continuous run.
+
+> **Scope not yet included here.** [ADR-0006](adr/0006-consume-upstream-converter.md) (consume upstream's converter) and [ADR-0007](adr/0007-override-model-and-pattern-catalogue.md) (override model and pattern catalogue) are **Proposed, not accepted**. The scope they imply is deliberately absent from these stages. If ADR-0006 is accepted, S19 shrinks to wrapping upstream's converter; if ADR-0007 is accepted, scope lands in S13, S15, S18, S23, S24, S28, S29 and S31.
 
 ## How to use this
 
@@ -63,6 +65,7 @@ Nothing below starts until this resolves. See [ADR-0001](adr/0001-fork-logicapps
 
 - [ ] Monorepo layout, build, lint, unit test harness
 - [ ] GitHub Actions running build + tests on PR
+- [ ] **Windows build agents** — Logic Apps Standard custom-functions tooling is Windows-only, so agents cannot be Linux-only ([ADR-0008](adr/0008-portability-ladder.md))
 - [ ] **CI check enforcing no `vscode` imports in core packages** — a rule, not a convention
 - [ ] Fixture corpus of sample BizTalk artefacts committed (synthetic, never customer data)
 
@@ -120,12 +123,27 @@ Scope decision in [ADR-0005](adr/0005-poc-scope-assessment-wedge.md). This phase
 - [ ] Every figure tagged `measured` or `assumed`
 - [ ] Read-only DB access; connection strings never persisted to the repo
 
+## S38 · Portability scanner `P0`
+
+Deterministic analysis, not judgement — see [11 · Legacy portability](11-legacy-portability.md). Feeds S10 and S14.
+
+- [ ] Read assembly metadata: target framework version, 32/64-bit
+- [ ] Detect COM/COM+ references and P/Invoke declarations
+- [ ] Detect references to BizTalk runtime assemblies (`IBaseMessage`, context property bags, ExplorerOM)
+- [ ] Detect MSMQ and **MSDTC** usage
+- [ ] Detect GAC and strong-name dependencies, and resolve the dependency closure
+- [ ] Flag licensed third-party libraries (a commercial blocker, not a technical one)
+- [ ] **Assign a portability tier 0–6 automatically** from the evidence
+- [ ] Report unresolved dependencies rather than guessing a tier
+
 ## S10 · Disposition engine `P0`
 
-- [ ] Label each artefact `retire` / `consolidate` / `migrate` / `rewrite`
+- [ ] Label each artefact across the full ladder vocabulary: `retire` / `reuse` / `lift` / `encapsulate` / `remain` / `stay` / `migrate` / `rewrite` / `blocked`
+- [ ] Consume the portability tier from S38
 - [ ] 12-month traffic evidence attached to each label
 - [ ] Duplicate map and dead port detection
 - [ ] Runs **before** placement, and its output reduces placement scope
+- [ ] **"Cannot migrate" resolves to a named strategy with a cost**, never a gap-list footnote
 
 ## S11 · Archetype classifier `P0`
 
@@ -161,6 +179,7 @@ Constraint in [ADR-0004](adr/0004-llm-never-produces-cost-figures.md): the model
 - [ ] VNet / private endpoint, latency SLO, transactionality, idempotency
 - [ ] X12 / EDIFACT / AS2 → forces Logic Apps Standard + Integration Account
 - [ ] Adapter availability (SAP, MQ, HL7), custom .NET assemblies
+- [ ] **Framework-target coupling** — Logic Apps local functions are 4.7.2, Functions isolated worker is 4.8; a 3.5/4.0 assembly's retarget decision is constrained by the chosen destination
 - [ ] Data residency and compliance
 - [ ] Each elimination records **which constraint** removed the candidate
 
@@ -171,6 +190,7 @@ Constraint in [ADR-0004](adr/0004-llm-never-produces-cost-figures.md): the model
 - [ ] Shared landing zone emitted **once** and referenced by all applications
 - [ ] Savings waterfall attributing the delta to retire / share-hosts / stateless / connector-swap
 - [ ] Portfolio TCO against the current BizTalk baseline
+- [ ] **Hybrid-estate TCO** — retained BizTalk licence, VMs, support and gateway cost for tier 4–5 flows, reported as a named output rather than omitted
 
 ## S16 · Architecture Design engine `P1`
 
@@ -205,18 +225,31 @@ Constraint in [ADR-0004](adr/0004-llm-never-produces-cost-figures.md): the model
 
 ## S19 · Logic Apps Standard emitter `P0`
 
+> **Scope pending [ADR-0006](adr/0006-consume-upstream-converter.md).** If accepted, this stage becomes *"wrap and orchestrate upstream's converter"* and most items below fall away.
+
 - [ ] `workflow.json` and `connections.json`
 - [ ] Stateful and stateless variants; **stateless by default where the IR proves no waits and no run-history need**, with the trade-off flagged
-- [ ] .NET local functions
+- [ ] **.NET Framework 4.7.2 local functions** for lifted assemblies (portability tier 2)
+- [ ] **Calling lifted assemblies from inside XSLT maps** — the scripting-functoid path
 - [ ] Project scaffolding and `host.json`
-- [ ] Mine `BizTalkMigrationStarter`'s `ODXtoWFMigrator` for shape mapping rather than re-deriving it
+- [ ] Mine `BizTalkMigrationStarter`'s `ODXtoWFMigrator` for shape mapping, and upstream's `dotnet-local-functions-logic-apps` skill, rather than re-deriving either
 
 ## S20 · Functions + Durable emitter `P0`
 
 - [ ] C# Function project, Flex Consumption configuration, bindings
+- [ ] **Isolated worker on .NET Framework 4.8** for lifted legacy assemblies — process isolation prevents 2010-era dependency closures colliding with the host
 - [ ] Durable orchestrations and entities for convoy and aggregator archetypes
-- [ ] Rehosting path for decompiled custom pipeline components
 - [ ] Native-client replacement for enterprise-connector flows — the single biggest cost lever
+
+## S39 · Legacy encapsulation emitter `P1`
+
+Portability tiers 3 and 4 — see [11 · Legacy portability](11-legacy-portability.md).
+
+- [ ] **Tier 3** — Windows container on Container Apps or an AKS Windows node pool, for COM/COM+, 32-bit, P/Invoke and Windows-API components
+- [ ] COM registration and GAC installation handled inside the image build
+- [ ] **Tier 4** — on-premises exposure via Logic Apps Hybrid, the on-premises data gateway, or a self-hosted API
+- [ ] Cost profile per tier, so placement can price encapsulation against a rewrite
+- [ ] Parity expectation per tier — a lifted binary should reach higher parity than a rewrite, and the harness should show that
 
 ## S21 · Messaging + APIM emitter `P0`
 
@@ -240,6 +273,7 @@ Constraint in [ADR-0004](adr/0004-llm-never-produces-cost-figures.md): the model
 - [ ] Extract input/output message pairs from BizTalk tracking history
 - [ ] Same for Mule logs
 - [ ] Per-flow storage and indexing
+- [ ] **Per-component pairs too**, so a source-less assembly can be characterised behaviourally before it is tiered — this is what makes "we lost the source in 2014" survivable
 - [ ] Redaction path for PII before pairs leave the customer environment
 - [ ] No customer writes a test case by hand
 

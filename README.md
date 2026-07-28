@@ -39,7 +39,7 @@ Ibex Cairn reverses the usual order of operations:
 
 **Pre-S01.** Research and architecture documentation only — no implementation has started.
 
-The build is broken into **38 stages across six phases** ([docs/10-stages.md](docs/10-stages.md), tracked in [`STAGES.csv`](STAGES.csv)) with five sign-off gates:
+The build is broken into **40 stages across six phases** ([docs/10-stages.md](docs/10-stages.md), tracked in [`STAGES.csv`](STAGES.csv)) with five sign-off gates:
 
 | Gate | Exit criterion |
 |---|---|
@@ -65,7 +65,8 @@ The build is broken into **38 stages across six phases** ([docs/10-stages.md](do
 | [07 · Verification](docs/07-verification.md) | Golden replay, parity scoring, shadow running |
 | [08 · Roadmap](docs/08-roadmap.md) | Phases with exit criteria, risks, open questions |
 | [09 · Naming](docs/09-naming.md) | Name decision, trademark collisions, outstanding legal work |
-| [10 · Stages](docs/10-stages.md) | **38 stages with per-stage checklists and phase gates** |
+| [10 · Stages](docs/10-stages.md) | **40 stages with per-stage checklists and phase gates** |
+| [11 · Legacy portability](docs/11-legacy-portability.md) | The portability ladder — how to handle code that "cannot migrate" |
 | [`STAGES.csv`](STAGES.csv) | Machine-readable stage tracker — status, dependencies, commit hashes |
 | [ADRs](docs/adr/) | Architecture decision records |
 | [Dossier](docs/dossier.html) | The full illustrated brief, including a working cost calculator |

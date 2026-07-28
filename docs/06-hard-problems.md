@@ -20,6 +20,8 @@ Microsoft states plainly that these have **no one-to-one Logic Apps equivalent**
 
 BizTalk long-running transactions with compensation blocks have no direct analogue. Correctness failures here are silent and expensive.
 
+**MSDTC specifically.** 2010-era BizTalk leans heavily on distributed transactions across MSMQ, SQL Server and the MessageBox. Azure has no equivalent at all, so every such flow is a redesign rather than a conversion — and this is the single most common reason a flow ends up at tier 5 or 6 of the [portability ladder](11-legacy-portability.md).
+
 **Mitigation.** Emit an explicit saga design per case for human approval. Never generate compensation logic without a parity test that exercises the **failure** path, not just the happy path.
 
 ## High
@@ -28,7 +30,11 @@ BizTalk long-running transactions with compensation blocks have no direct analog
 
 Often source-less; behaviour observable only through the binary. Frequently the load-bearing business logic nobody documented.
 
-**Mitigation.** Decompile, characterise with tests derived from real traffic, rehost as a local function or Container App. Where decompilation fails, wrap and lift the binary unchanged — a working black box beats a broken rewrite.
+**Downgraded from critical after verification.** The framework version turns out not to be the blocker — Logic Apps Standard can call .NET Framework 4.7.2 assemblies unchanged (including from inside XSLT maps), and Azure Functions isolated worker supports 4.8 with process isolation. Most 2010-vintage assemblies are therefore **lifted, not rewritten**.
+
+**Mitigation.** Assign a tier from the portability ladder in [11 · Legacy portability](11-legacy-portability.md): lift the binary (tier 2), containerise on Windows (tier 3), or expose it from on-premises via Hybrid or the data gateway (tier 4). Characterise source-less assemblies with golden pairs from tracking history, confirmed by decompilation, before deciding. A working black box beats a broken rewrite.
+
+**What actually blocks** is Windows-platform coupling, not the framework: COM/COM+, 32-bit native DLLs, P/Invoke, MSMQ, and references to BizTalk runtime APIs (`IBaseMessage`, context property bags, ExplorerOM) which have no equivalent because there is no MessageBox.
 
 ### Scripting functoids and complex maps
 

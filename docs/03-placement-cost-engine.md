@@ -10,7 +10,9 @@ The engine that makes the product defensible. Six steps, in this order — getti
 
 BizTalk hands you the evidence for free. `BizTalkDTADb` holds tracking history per receive port, send port and orchestration; `BizTalkMsgBoxDb` holds the subscription topology. Together they answer the question no stakeholder interview answers honestly: **which of these artefacts actually carries traffic?**
 
-Label every artefact **retire / consolidate / migrate / rewrite**, with the traffic evidence attached to the label.
+Label every artefact with a disposition and attach the traffic evidence to it. The vocabulary spans the [portability ladder](11-legacy-portability.md), because "cannot migrate" must be a named strategy carrying a cost rather than a gap-list footnote:
+
+`retire` · `reuse` · `lift` · `encapsulate` · `remain` · `stay` · `migrate` · `rewrite` · `blocked`
 
 On a fifty-application estate a meaningful slice has had no traffic for a year. Retiring 20% of the estate is a 20% saving that no conversion improvement can match, and it is the one recommendation a client can act on the same afternoon.
 
@@ -85,6 +87,14 @@ Stateful workflows write to Storage queues, tables and blobs on every action; st
 ### Portfolio optimisation
 
 Emit the shared landing zone **once** and reference it from all fifty applications: shared Workflow Service Plans, shared Function Apps, one APIM instance, one Service Bus namespace, one Key Vault, one Log Analytics workspace, one Integration Account for all trading partners, one schema and map registry, one common error-handling / dead-letter / resubmit workflow.
+
+### Hybrid-estate TCO — a named output, not a caveat
+
+Some flows will not move. Tiers 4 and 5 of the [portability ladder](11-legacy-portability.md) retain on-premises cost: BizTalk licences, VMs, support contracts, and the gateway infrastructure to reach them.
+
+The honest total — *"nine flows cannot move, so you will still be paying £X a year for BizTalk"* — is the figure nobody tells the CIO, and it is what decides whether to fund the tier-6 rewrites. It must appear in the portfolio TCO alongside the Azure run cost rather than being omitted because it is inconvenient. Microsoft's free tool has no incentive to produce it.
+
+Pair it with the BizTalk support lifecycle deadline, which puts a clock on tier 5. **Confirm those dates from Microsoft's lifecycle page — never quote them from memory.**
 
 ## Step 6 · Close the loop
 

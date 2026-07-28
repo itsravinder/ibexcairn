@@ -10,6 +10,18 @@ Read [docs/00-vision.md](docs/00-vision.md) first. It is short and it is the who
 
 Documentation only. No implementation. Do not scaffold code, create package manifests, or start a build until **S01** (upstream licence review) is resolved — the entire architecture depends on whether the licence permits a commercial fork. See [ADR-0001](docs/adr/0001-fork-logicapps-migration-agent.md).
 
+## Model routing — analysis vs build
+
+This project deliberately splits models: **analysis and specification on Opus 5, implementation on Opus 4.8.** A session cannot route a subagent to a specific Opus version, so the split is achieved by switching the session model in the app's model selector.
+
+**A model switch does not carry reasoning with it.** Therefore:
+
+- Analysis sessions produce a **written spec in `docs/specs/`** before any code is written — detailed enough to implement without re-deriving anything
+- Build sessions implement **to the spec**, and do not redesign it. If the spec is wrong or ambiguous, stop and say so rather than improvising
+- The spec, the ADRs and `STAGES.csv` are the handoff medium. Conversation history is not
+
+Current spec: [`docs/specs/001-cost-engine.md`](docs/specs/001-cost-engine.md) — S03 → S12 → S13, sequential, with a checkpoint after each step.
+
 ## Stage tracking
 
 Work is broken into 38 stages in [`STAGES.csv`](STAGES.csv), with acceptance checklists per stage in [docs/10-stages.md](docs/10-stages.md). Same format as the `minerva` project plus a `phase` column.

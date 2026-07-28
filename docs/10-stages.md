@@ -15,6 +15,10 @@
 
 Working rhythm, per stage: set `in_progress` → implement → tick every checklist box → set `done` + `verified` → commit the work → record the hash in `STAGES.csv` in a separate `chore:` commit.
 
+**Current status:** run `python scripts/status.py`. It prints per-phase completion, what is startable now, and what each remaining stage waits on — and it fails loudly if `STAGES.csv` develops a dependency cycle or a dangling reference.
+
+`depends_on` means **cannot start before**, not *logically consumes*. S09, S12, S13 and S38 read databases, HTTP APIs and assemblies directly, so none of them wait on ingest or on the S01 licence outcome.
+
 **A stage is not done until its checklist is complete.** The boxes below are the acceptance criteria, not suggestions.
 
 ---

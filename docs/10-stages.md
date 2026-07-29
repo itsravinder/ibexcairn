@@ -113,13 +113,18 @@ Built to [Spec 001 step 1](specs/001-cost-engine.md). pnpm workspace with four p
 - [ ] Ubuntu CI leg observed green — verified locally on Windows only; confirm on first push
 - [ ] Fixture corpus of sample BizTalk artefacts — **deferred to S02/S05**: there is no parser yet to consume it, so committing fixtures now would be dead weight
 
-## S04 · LLM provider abstraction `P0`
+## S04 · LLM provider abstraction `P0` — **built, CI-observation pending**
 
-- [ ] `ILlmProvider` interface
-- [ ] Claude API implementation, server-side
-- [ ] VS Code LM API retained as optional local provider
-- [ ] 13 skill Markdown files ported as prompt assets
-- [ ] No Copilot subscription required anywhere in the core path
+Built `packages/llm`.
+
+- [x] `ILlmProvider` interface (provider-agnostic request/response/usage types)
+- [x] `ClaudeProvider` over the Anthropic Messages API, with an injectable fetch so it is testable offline
+- [x] `FakeLlmProvider` for deterministic tests and offline runs
+- [x] `SkillLoader` + `parseSkill` — YAML frontmatter parser handling inline, folded (`>-`) and CRLF
+- [x] 13 BizTalk skill Markdown files ported from upstream as prompt assets, with `skills/NOTICE.md` attribution (MIT)
+- [x] No Copilot dependency; **the VS Code LM provider lives in the editor client, not `packages/`** — the headless guard forbids `vscode` in the core
+- [x] 22 tests green (llm: 10); no test touches the network
+- [ ] Ubuntu CI leg observed green — verified locally on Windows only
 
 ---
 

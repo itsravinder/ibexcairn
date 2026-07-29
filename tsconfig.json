@@ -4,6 +4,7 @@
     { "path": "packages/core-types" },
     { "path": "packages/rates" },
     { "path": "packages/cost" },
+    { "path": "packages/llm" },
     { "path": "packages/cli" }
   ]
 }

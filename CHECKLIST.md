@@ -1,16 +1,16 @@
 # Ibex Cairn - build checklist
 
-**3 / 40 stages complete.** Generated from [STAGES.csv](STAGES.csv) by `python scripts/status.py --md` - do not edit by hand.
+**4 / 40 stages complete.** Generated from [STAGES.csv](STAGES.csv) by `python scripts/status.py --md` - do not edit by hand.
 
 Legend: `[x]` done &middot; `[~]` in progress &middot; `[ ]` todo. Gates are human sign-off points.
 
-## Foundation (2/5)
+## Foundation (3/5)
 
 - [~] S00 Brand + legal clearance
 - [x] S01 Upstream licence review
 - [~] S02 Headless core extraction
 - [x] S03 Repo scaffold + CI
-- [ ] S04 LLM provider abstraction &larr; next
+- [x] S04 LLM provider abstraction
 
 ## Assessment (1/14)
 
@@ -18,7 +18,7 @@ Legend: `[x]` done &middot; `[~]` in progress &middot; `[ ]` todo. Gates are hum
 - [ ] S06 IR extension
 - [ ] S07 Dependency graph + flow grouping
 - [ ] S08 Complexity + gap scoring
-- [ ] S09 Volumetrics harvester
+- [ ] S09 Volumetrics harvester &larr; next
 - [ ] S10 Disposition engine
 - [ ] S11 Archetype classifier
 - [x] S12 Rate card client

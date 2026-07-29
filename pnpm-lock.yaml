@@ -40,6 +40,8 @@ importers:
         specifier: workspace:*
         version: link:../core-types
 
+  packages/llm: {}
+
   packages/rates:
     dependencies:
       '@ibexcairn/core-types':

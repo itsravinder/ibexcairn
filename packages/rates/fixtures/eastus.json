@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "apiVersion": "2023-01-01-preview",
+  "region": "eastus",
+  "currency": "USD",
+  "retrievedOn": "2026-07-29T13:21:26.436Z",
+  "rates": {
+    "logicapps.consumption.action.builtin": {
+      "value": 0.000025,
+      "canonicalUnit": "per action",
+      "meterId": "155afecf-5804-4ca4-ae3d-2cff595ab8d4",
+      "meterName": "Consumption Built-in Actions",
+      "sourceUnitOfMeasure": "1",
+      "sourceRetailPrice": 0.000025
+    },
+    "logicapps.consumption.action.standardConnector": {
+      "value": 0.000125,
+      "canonicalUnit": "per action",
+      "meterId": "3d2036fb-cad3-47cf-98cb-0a66f53be6cd",
+      "meterName": "Consumption Standard Connector Actions",
+      "sourceUnitOfMeasure": "1",
+      "sourceRetailPrice": 0.000125
+    },
+    "logicapps.consumption.action.enterpriseConnector": {
+      "value": 0.001,
+      "canonicalUnit": "per action",
+      "meterId": "f928ef88-0cf4-42f3-91af-fbf61c7d816c",
+      "meterName": "Consumption Enterprise Connector Actions",
+      "sourceUnitOfMeasure": "1",
+      "sourceRetailPrice": 0.001
+    },
+    "logicapps.standard.vcpu.hour": {
+      "value": 0.1997,
+      "canonicalUnit": "per vCPU-hour",
+      "meterId": "2fd48189-4cef-5169-833e-dbc17ac026a8",
+      "meterName": "Standard vCPU Duration",
+      "sourceUnitOfMeasure": "1 Hour",
+      "sourceRetailPrice": 0.1997
+    },
+    "logicapps.standard.memory.gibHour": {
+      "value": 0.0143,
+      "canonicalUnit": "per GiB-hour",
+      "meterId": "0a17dfcc-18ca-5552-b366-3bf008196eeb",
+      "meterName": "Standard Memory Duration",
+      "sourceUnitOfMeasure": "1 GiB Hour",
+      "sourceRetailPrice": 0.0143
+    },
+    "servicebus.standard.base.month": {
+      "value": 10,
+      "canonicalUnit": "per month",
+      "meterId": "d5034e45-00c1-48c6-8c00-c866f788e033",
+      "meterName": "Standard Base Unit",
+      "sourceUnitOfMeasure": "1/Month",
+      "sourceRetailPrice": 10
+    },
+    "servicebus.standard.operation": {
+      "value": 8.000000000000001e-7,
+      "canonicalUnit": "per operation",
+      "meterId": "2a9992f8-e914-490b-a7a6-6d21ba55acda",
+      "meterName": "Standard Messaging Operations",
+      "sourceUnitOfMeasure": "1M",
+      "sourceRetailPrice": 0.8
+    },
+    "functions.ondemand.execution": {
+      "value": 4e-7,
+      "canonicalUnit": "per execution",
+      "meterId": "4d397fba-0393-57dd-9da3-f145b5c874fe",
+      "meterName": "On Demand Total Executions",
+      "sourceUnitOfMeasure": "10",
+      "sourceRetailPrice": 0.000004
+    },
+    "functions.ondemand.gbSecond": {
+      "value": 0.000026,
+      "canonicalUnit": "per GB-second",
+      "meterId": "cd5d6bae-9b8d-5456-ab84-46919175c318",
+      "meterName": "On Demand Execution Time",
+      "sourceUnitOfMeasure": "1 GB Second",
+      "sourceRetailPrice": 0.000026
+    },
+    "storage.table.transaction": {
+      "value": 3.6000000000000005e-8,
+      "canonicalUnit": "per transaction",
+      "meterId": "b9e5e77c-a0b3-4a2c-9b8b-57fa54f31c52",
+      "meterName": "Batch Write Operations",
+      "sourceUnitOfMeasure": "10K",
+      "sourceRetailPrice": 0.00036
+    },
+    "logicapps.standard.ws1.month": {
+      "value": 182.3175,
+      "canonicalUnit": "per month",
+      "meterId": "composite",
+      "meterName": "composite: WS1 (1 vCPU + 3.5 GiB x 730h)",
+      "sourceUnitOfMeasure": "derived",
+      "sourceRetailPrice": 182.3175
+    }
+  }
+}

@@ -59,9 +59,11 @@ export interface Placement {
 export interface RateCard {
   readonly region: string;
   readonly retrievedOn: string;
-  /** Monthly-normalised rate for a meter id. Throws if the meter is unknown -
-   * a missing meter priced as free is the most dangerous failure mode (S12). */
-  meterRate(meterId: string): number;
+  /** Retail price for an internal meter key, in that meter's canonical unit
+   * (per action, per operation, per GiB-hour, per month - documented in the
+   * rates catalogue). Throws if the key is unknown: a missing meter priced as
+   * free is the most dangerous failure mode in the cost engine (S12). */
+  meterRate(meterKey: string): number;
 }
 
 /** One line of a cost breakdown, traceable to a meter and an input. */

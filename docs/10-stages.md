@@ -197,12 +197,20 @@ Deterministic analysis, not judgement — see [11 · Legacy portability](11-lega
 - [ ] Emits candidate **compositions** (trigger + compute + state + exposure), not single services
 - [ ] Overrides captured with reasons
 
-## S12 · Rate card client `P0`
+## S12 · Rate card client `P0` — **built, CI-observation pending**
 
-- [ ] Azure Retail Prices API client, per region and per SKU
-- [ ] Caching plus offline fixture snapshots
-- [ ] **Regression suite with one fixture per billing rule**
-- [ ] Alert when a meter disappears or changes shape
+Built to [Spec 001 step 2](specs/001-cost-engine.md). `packages/rates`.
+
+- [x] Azure Retail Prices API client, per region and per SKU — `HttpRetailClient`, follows `NextPageLink` to exhaustion
+- [x] `LiveRateCard` (fetch + TTL disk cache) and `FixtureRateCard` (disk); `RateCardSource` interface
+- [x] Meter catalogue mapping stable keys → feed selectors, with `unitOfMeasure` as the drift tripwire
+- [x] **Fails loudly on drift** — a missing meter or a changed unit throws `MeterDriftError` naming the key, never prices as zero. Proven live (caught a 2-row Functions executions meter) and offline (unit-tests)
+- [x] Real committed fixture `fixtures/eastus.json`, captured from the live API via `pnpm rates:capture` (11 meters; connector prices exact, WS1 derived to $182.32)
+- [x] Corrupted-fixture test throws naming the missing meter (DoD)
+- [x] **No test touches the network** — tests use `FixtureRateCard` + offline `buildSnapshot` only (verified by grep)
+- [x] 12 tests green (rates: 10)
+- [ ] Ubuntu CI leg observed green — verified locally on Windows only
+- [ ] **Regression suite with one fixture per billing rule** — deferred to S13, where the billing rules live
 
 ## S13 · Cost model + crossover engine `P0`
 

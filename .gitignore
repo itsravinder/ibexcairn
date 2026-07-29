@@ -7,6 +7,7 @@ out/
 .npm/
 .pnpm-store/
 coverage/
+.cache/
 
 # Env & secrets — never commit rate cards with account identifiers,
 # tracking-DB connection strings, or tenant credentials

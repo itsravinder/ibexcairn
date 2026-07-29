@@ -68,6 +68,7 @@ The build is broken into **40 stages across six phases** ([docs/10-stages.md](do
 | [10 · Stages](docs/10-stages.md) | **40 stages with per-stage checklists and phase gates** |
 | [11 · Legacy portability](docs/11-legacy-portability.md) | The portability ladder — how to handle code that "cannot migrate" |
 | [`STAGES.csv`](STAGES.csv) | Machine-readable stage tracker — status, dependencies, commit hashes |
+| [CHECKLIST.md](CHECKLIST.md) | Per-stage checklist, generated from `STAGES.csv` (`python scripts/status.py --md`) |
 | [Spec 001 · Cost engine](docs/specs/001-cost-engine.md) | **Ready to implement** — S03 → S12 → S13, with acceptance tests |
 | [Spec 002 · Headless extraction](docs/specs/002-headless-extraction.md) | **Ready to implement** — S02, spike complete, needs the S03 scaffold first |
 | [ADRs](docs/adr/) | Architecture decision records |

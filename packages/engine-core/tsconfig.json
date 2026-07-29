@@ -2,9 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "noUncheckedIndexedAccess": false
   },
   "include": ["src/**/*"],
-  "exclude": ["src/**/*.test.ts", "dist"],
-  "references": [{ "path": "../engine-core" }]
+  "exclude": ["src/**/*.test.ts", "dist"]
 }

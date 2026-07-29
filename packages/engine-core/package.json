@@ -1,19 +1,16 @@
 {
-  "name": "@ibexcairn/cli",
+  "name": "@ibexcairn/engine-core",
   "version": "0.0.0",
   "private": true,
-  "description": "ibexcairn command-line entry point.",
+  "description": "Headless fork of the upstream parsers + IR (S02). No vscode, no telemetry. Lifted from Azure/logicapps-migration-agent (MIT).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": {
-    "ibexcairn": "dist/index.js"
-  },
   "scripts": {
     "build": "tsc -b",
     "test": "vitest run --passWithNoTests",
     "clean": "tsc -b --clean"
   },
   "dependencies": {
-    "@ibexcairn/engine-core": "workspace:*"
+    "@xmldom/xmldom": "^0.8.11"
   }
 }

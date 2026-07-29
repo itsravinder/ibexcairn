@@ -10,7 +10,12 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const PACKAGES = fileURLToPath(new URL('../packages', import.meta.url));
-const PATTERN = /(?:from|require\()\s*['"]vscode['"]/;
+// Bans, in imports only (comments mentioning these words are fine):
+//   - vscode                        : the engine must be headless
+//   - @vscode/extension-telemetry   : no vendor telemetry egress (S01/S02)
+//   - applicationinsights           : ditto
+const PATTERN =
+  /(?:from|require\()\s*['"](?:vscode|@vscode\/extension-telemetry|applicationinsights[^'"]*)['"]/;
 
 /**
  * @param {string} dir
@@ -31,10 +36,11 @@ function walk(dir) {
 const offenders = walk(PACKAGES).filter((file) => PATTERN.test(readFileSync(file, 'utf8')));
 
 if (offenders.length > 0) {
-  console.error('FAIL: vscode imports found in core packages:');
+  console.error('FAIL: banned imports (vscode / telemetry) found in core packages:');
   for (const file of offenders) console.error('  ' + file);
-  console.error('\nThe engine must be headless. Put editor-only code in the VS Code client.');
+  console.error('\nThe engine must be headless with no vendor telemetry egress.');
+  console.error('Put editor-only code in the VS Code client, not in packages/.');
   process.exit(1);
 }
 
-console.log('OK: no vscode imports in packages/');
+console.log('OK: no vscode or telemetry imports in packages/');

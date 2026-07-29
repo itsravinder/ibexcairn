@@ -1,6 +1,14 @@
 # 09 · Naming
 
-**Decision: Ibex Cairn.** Repository `itsravinder/ibexcairn`, created 26 July 2026.
+**Decision: Ibex Cairn** — repository `itsravinder/ibexcairn`, created 26 July 2026.
+
+> ## ⚠️ Provisional pending legal opinion
+>
+> S00 screening found a **live US registration for `IBEX` (Reg. 5,985,152, owner Bryan M. Perdue) in Classes 9 and 42 whose goods description covers "software for integrating and automating separate software systems"** — our exact category, in the classes we would file in.
+>
+> This is materially more serious than the two collisions documented further down, both of which are in adjacent categories. **Do not invest in the brand until an attorney has opined.** Renaming today costs an afternoon; renaming after launch costs a great deal.
+>
+> Full findings, including confirmed availability of every domain, the GitHub org and the npm scope: [S00 trademark screening](legal/S00-trademark-screening.md).
 
 ## Why
 
@@ -71,11 +79,21 @@ Applied here:
 
 ## Outstanding legal work
 
-Collisions above were identified by web search on 26 July 2026, **not by legal clearance**. Before spending money on the brand:
+Preliminary screening is complete — see [S00 trademark screening](legal/S00-trademark-screening.md). It is a knockout search, **not a clearance opinion**.
 
-- [ ] USPTO search, classes **9** (software) and **42** (SaaS)
-- [ ] EUIPO search, same classes
-- [ ] Azure Marketplace name-collision check
-- [ ] Domain acquisition — target the exact-match compound (`ibexcairn.com`); do not fight for any `ibex`-only variant, all of which are taken or expensive
-- [ ] GitHub organisation and npm scope
-- [ ] Formal opinion on coexistence with IBEX Limited and Ibexa given differing classes and markets
+**Blocking, before any brand investment:**
+
+- [ ] Verify Reg. **5,985,152** against the primary USPTO record (TSDR) — live status, assignments, file history
+- [ ] **Attorney clearance opinion**, Classes 9 and 42, specifically on `IBEX CAIRN` vs Reg. 5,985,152; secondarily Ibexa AS and IBEX Limited
+- [ ] EUIPO search, same classes — not covered by the screening
+- [ ] **Go/no-go on the name**, while renaming is still nearly free
+
+**After a positive opinion:**
+
+- [x] ~~Domain availability~~ — `ibexcairn.com`, `.io`, `.dev`, `.ai` all confirmed available (26 Jul 2026)
+- [x] ~~GitHub org and npm scope availability~~ — `ibexcairn` org and `@ibexcairn` scope both free
+- [ ] Register `ibexcairn.com` and defensively `.io`
+- [ ] Create the GitHub organisation, claim the npm scope
+- [ ] Azure Marketplace publisher name check (needs a Partner Center account)
+
+**If counsel advises against the root**, do not fall back to another `Ibex *` compound — they inherit the same Class 9 problem. Go to `Assay`, `Godwit` or `Weir`.

@@ -37,16 +37,28 @@ Four points where work stops until someone signs off. These exist because an una
 
 # Foundation
 
-## S00 · Brand + legal clearance `P1`
+## S00 · Brand + legal clearance `P1` — **in progress**
 
-Parallel track — does not block engineering. Detail in [09 · Naming](09-naming.md).
+Parallel track; does not block engineering. Screening report: [S00 trademark screening](legal/S00-trademark-screening.md).
 
-- [ ] USPTO search, classes 9 and 42
-- [ ] EUIPO search, same classes
-- [ ] Coexistence opinion vs IBEX Limited (NASDAQ: IBEX) and Ibexa
-- [ ] Acquire `ibexcairn.com`
-- [ ] GitHub organisation and npm scope
-- [ ] Azure Marketplace name-collision check
+**Preliminary screening — done 26 Jul 2026:**
+
+- [x] Public-record USPTO screening, Classes 9 and 42
+- [x] Domain availability — `.com`, `.io`, `.dev`, `.ai` all free
+- [x] GitHub organisation and npm scope availability — both free
+- [x] "Cairn" checked as the distinguishing element — no software-category conflict
+
+**Blocking, needs a lawyer or a person:**
+
+- [ ] ⚠️ **Verify Reg. 5,985,152** (`IBEX`, Classes 9 + 42, goods cover *"software for integrating and automating separate software systems"*) against the primary USPTO/TSDR record
+- [ ] **Attorney clearance opinion** on `IBEX CAIRN` vs that registration; secondarily Ibexa AS and IBEX Limited
+- [ ] EUIPO search, Classes 9 and 42 — not covered by the screening
+- [ ] **Go/no-go on the name while renaming is still nearly free**
+- [ ] Register `ibexcairn.com` (+ defensively `.io`)
+- [ ] Create the GitHub organisation, claim the `@ibexcairn` npm scope
+- [ ] Azure Marketplace publisher name check (needs Partner Center)
+
+If counsel advises against the root, **do not** fall back to another `Ibex *` compound — they inherit the same Class 9 exposure.
 
 ## S01 · Upstream licence review `P0` — **BLOCKER**
 

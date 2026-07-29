@@ -1,0 +1,16 @@
+{
+  "name": "@ibexcairn/cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "ibexcairn command-line entry point.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "ibexcairn": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run --passWithNoTests",
+    "clean": "tsc -b --clean"
+  }
+}

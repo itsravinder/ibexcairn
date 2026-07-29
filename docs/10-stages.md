@@ -99,14 +99,19 @@ Full plan and measurements: [Spec 002 · Headless extraction](specs/002-headless
 - [ ] Catalogue the 13 skill files and `resources/agents/` prompts — plain Markdown, should port unchanged (S04)
 - [ ] Record for later: upstream uses `xstate` for its stage machine (before S29); `mermaid` and `docx` are already dependencies (S16/S17)
 
-## S03 · Repo scaffold + CI `P0`
+## S03 · Repo scaffold + CI `P0` — **built, CI-observation pending**
 
-- [ ] Monorepo layout, build, lint, unit test harness
-- [ ] GitHub Actions running build + tests on PR
-- [ ] **Windows build agents** — Logic Apps Standard custom-functions tooling is Windows-only, so agents cannot be Linux-only ([ADR-0008](adr/0008-portability-ladder.md))
-- [ ] **`git config core.longpaths true` in the Windows CI job** — upstream's `resources/referenceDocs/**` exceeds `MAX_PATH` and a plain clone fails part-way. Found during the S02 spike ([Spec 002](specs/002-headless-extraction.md))
-- [ ] **CI check enforcing no `vscode` imports in core packages** — a rule, not a convention
-- [ ] Fixture corpus of sample BizTalk artefacts committed (synthetic, never customer data)
+Built to [Spec 001 step 1](specs/001-cost-engine.md). pnpm workspace with four packages — `core-types`, `rates`, `cost`, `cli` — tsc project references, vitest, type-checked eslint, prettier.
+
+- [x] Monorepo layout, build, lint, unit test harness — `pnpm install / build / test / lint` all green locally
+- [x] GitHub Actions running build + tests on PR (`.github/workflows/ci.yml`)
+- [x] **Windows build agents** — matrix is `ubuntu-latest` + `windows-latest` ([ADR-0008](adr/0008-portability-ladder.md))
+- [x] **`git config core.longpaths true` in the Windows CI job** — for the upstream content S02 will add
+- [x] **CI check enforcing no `vscode` imports** — `scripts/check-no-vscode.mjs`, **proven to exit 1 on a planted import** and 0 when clean
+- [x] `packages/cost` depends on nothing beyond `core-types` (DoD)
+- [x] `pnpm ibexcairn --help` runs (DoD)
+- [ ] Ubuntu CI leg observed green — verified locally on Windows only; confirm on first push
+- [ ] Fixture corpus of sample BizTalk artefacts — **deferred to S02/S05**: there is no parser yet to consume it, so committing fixtures now would be dead weight
 
 ## S04 · LLM provider abstraction `P0`
 

@@ -1,0 +1,16 @@
+{
+  "name": "@ibexcairn/rates",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Azure Retail Prices client with disk cache and fixture mode (S12). I/O lives here.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run --passWithNoTests",
+    "clean": "tsc -b --clean"
+  },
+  "dependencies": {
+    "@ibexcairn/core-types": "workspace:*"
+  }
+}

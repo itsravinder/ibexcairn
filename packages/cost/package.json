@@ -1,0 +1,16 @@
+{
+  "name": "@ibexcairn/cost",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pure cost model (S13). No I/O, no clock, no randomness. Depends only on core-types.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run --passWithNoTests",
+    "clean": "tsc -b --clean"
+  },
+  "dependencies": {
+    "@ibexcairn/core-types": "workspace:*"
+  }
+}

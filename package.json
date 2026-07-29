@@ -1,0 +1,28 @@
+{
+  "name": "ibexcairn",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Integration migration platform - cost-driven placement, then code.",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "eslint .",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
+    "check:novscode": "node scripts/check-no-vscode.mjs",
+    "ibexcairn": "node packages/cli/dist/index.js"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/node": "^22.7.0",
+    "eslint": "^9.13.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.11.0",
+    "vitest": "^2.1.3"
+  }
+}

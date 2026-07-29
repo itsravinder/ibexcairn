@@ -72,23 +72,39 @@ Verbatim MIT, no additional terms. Full review: [S01 · Upstream licence review]
 - [ ] Confirm the Azure *preview supplemental terms* attach to the hosted service and marketplace extension, not to MIT source
 - [ ] Sponsor sign-off on ADR-0001
 
-## S02 · Headless core extraction `P0`
+## S02 · Headless core extraction `P0` — **spike done, extraction pending S03**
 
-- [ ] Fork upstream and record the base commit (upstream was at v1.9.0, `main` pushed 17 Jul 2026)
-- [ ] Spike: confirm `src/parsers/**` and `src/ir/**` detach from the extension host
-- [ ] Lift both into a standalone TS library, zero `vscode` imports
-- [ ] **Strip `@vscode/extension-telemetry` and `@microsoft/applicationinsights-common`**, and prove no telemetry egress remains — a purchase condition for regulated customers, not a cleanup task
-- [ ] **Sever `extensionDependencies: ["ms-azuretools.vscode-azurelogicapps"]`** — that extension is proprietary marketplace software, not MIT, and the library must not inherit it
-- [ ] Ship a `THIRD-PARTY-NOTICES` file carrying Microsoft's MIT notice
-- [ ] CLI emits valid `ir.json` from a real BizTalk project
-- [ ] Catalogue the 13 skill files and note what survives the move off Copilot
-- [ ] Study upstream's `xstate` stage machine before designing S29, and note that `mermaid` and `docx` are already dependencies (relevant to S16/S17)
+Full plan and measurements: [Spec 002 · Headless extraction](specs/002-headless-extraction.md). Base commit `4b08eb8`.
+
+**Spike — done 26 Jul 2026. Verdict: extraction is mechanical, not a rewrite.**
+
+- [x] Confirm `src/parsers/**` and `src/ir/**` detach from the extension host — **yes**
+- [x] Measured coupling: `parsers/` 18/29 files, but **16 of those use only `vscode.CancellationToken`**; `ir/` 1/21; `types/`, `constants/`, `workflowSchema/` already clean
+- [x] Identified the only two real problems: `ParserPluginLoader.ts` (VS Code extension discovery — delete) and `ir/storage/IRStorage.ts` (`workspace.fs` — put behind an interface)
+- [x] Telemetry isolated to exactly one file, `src/services/TelemetryService.ts`
+- [x] Reuse tally: **26,451 of 63,460 lines lift (42%)**; the remainder was always going to be replaced
+- [x] ⚠️ Found that **upstream does not clone on Windows** without `core.longpaths` — `resources/referenceDocs/**` exceeds `MAX_PATH`
+
+**Extraction — needs the S03 scaffold to extract into:**
+
+- [ ] Fork upstream, record base commit, **shorten the `resources/referenceDocs/**` paths** so the fork clones cleanly on Windows
+- [ ] Define a `vscode`-free `CancellationToken` in `core-types`; mechanical replace across the 16 affected files
+- [ ] Delete `ParserPluginLoader.ts` and the stale `vscode` import in `parsers/types.ts`
+- [ ] Replace `IRStorage`'s `workspace.fs` with an `IArtefactStore` interface plus a Node `fs` implementation
+- [ ] **Strip `TelemetryService.ts`**, `@vscode/extension-telemetry` and `@microsoft/applicationinsights-common` — a purchase condition for regulated customers, not a cleanup task
+- [ ] **Sever `extensionDependencies: ["ms-azuretools.vscode-azurelogicapps"]`** — proprietary, not MIT
+- [ ] Ship `THIRD-PARTY-NOTICES` carrying Microsoft's MIT notice
+- [ ] **Prove it: build with `@types/vscode` absent from the tree.** CI greps for `vscode`, `telemetry` and `applicationinsights` in `packages/` and fails on a hit
+- [ ] CLI `parse <path> --out ir.json` emits a schema-valid IR document from a real BizTalk project; round-trip test
+- [ ] Catalogue the 13 skill files and `resources/agents/` prompts — plain Markdown, should port unchanged (S04)
+- [ ] Record for later: upstream uses `xstate` for its stage machine (before S29); `mermaid` and `docx` are already dependencies (S16/S17)
 
 ## S03 · Repo scaffold + CI `P0`
 
 - [ ] Monorepo layout, build, lint, unit test harness
 - [ ] GitHub Actions running build + tests on PR
 - [ ] **Windows build agents** — Logic Apps Standard custom-functions tooling is Windows-only, so agents cannot be Linux-only ([ADR-0008](adr/0008-portability-ladder.md))
+- [ ] **`git config core.longpaths true` in the Windows CI job** — upstream's `resources/referenceDocs/**` exceeds `MAX_PATH` and a plain clone fails part-way. Found during the S02 spike ([Spec 002](specs/002-headless-extraction.md))
 - [ ] **CI check enforcing no `vscode` imports in core packages** — a rule, not a convention
 - [ ] Fixture corpus of sample BizTalk artefacts committed (synthetic, never customer data)
 

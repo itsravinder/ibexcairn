@@ -60,22 +60,29 @@ Parallel track; does not block engineering. Screening report: [S00 trademark scr
 
 If counsel advises against the root, **do not** fall back to another `Ibex *` compound — they inherit the same Class 9 exposure.
 
-## S01 · Upstream licence review `P0` — **BLOCKER**
+## S01 · Upstream licence review `P0` — **RESOLVED, fork permitted**
 
-Nothing below starts until this resolves. See [ADR-0001](adr/0001-fork-logicapps-migration-agent.md).
+Verbatim MIT, no additional terms. Full review: [S01 · Upstream licence review](legal/S01-upstream-licence-review.md).
 
-- [ ] Read `LICENSE` and any contributor/usage terms on `Azure/logicapps-migration-agent`
-- [ ] Formal opinion on commercial redistribution of a fork
-- [ ] Decision recorded: fork, or fall back to the hybrid option
-- [ ] If hybrid: reopen parser build scope and revise the roadmap
+- [x] Read `LICENSE` and any contributor/usage terms — **unmodified MIT**, © 2026 Microsoft Corporation. No rider, no field-of-use restriction, no trademark clause. Only `LICENSE`, `README.md`, `SECURITY.md` exist
+- [x] Decision recorded: **fork** ([ADR-0001](adr/0001-fork-logicapps-migration-agent.md) → Accepted). Hybrid fallback not needed
+- [x] ~~If hybrid: reopen parser build scope~~ — not applicable
+- [ ] Counsel glance at the MIT terms and attribution mechanics — a formality for unmodified MIT, but record it
+- [ ] **Transitive dependency licence scan, gated in CI** — the only real remaining exposure
+- [ ] Confirm the Azure *preview supplemental terms* attach to the hosted service and marketplace extension, not to MIT source
+- [ ] Sponsor sign-off on ADR-0001
 
 ## S02 · Headless core extraction `P0`
 
-- [ ] Fork upstream and record the base commit
+- [ ] Fork upstream and record the base commit (upstream was at v1.9.0, `main` pushed 17 Jul 2026)
 - [ ] Spike: confirm `src/parsers/**` and `src/ir/**` detach from the extension host
 - [ ] Lift both into a standalone TS library, zero `vscode` imports
+- [ ] **Strip `@vscode/extension-telemetry` and `@microsoft/applicationinsights-common`**, and prove no telemetry egress remains — a purchase condition for regulated customers, not a cleanup task
+- [ ] **Sever `extensionDependencies: ["ms-azuretools.vscode-azurelogicapps"]`** — that extension is proprietary marketplace software, not MIT, and the library must not inherit it
+- [ ] Ship a `THIRD-PARTY-NOTICES` file carrying Microsoft's MIT notice
 - [ ] CLI emits valid `ir.json` from a real BizTalk project
 - [ ] Catalogue the 13 skill files and note what survives the move off Copilot
+- [ ] Study upstream's `xstate` stage machine before designing S29, and note that `mermaid` and `docx` are already dependencies (relevant to S16/S17)
 
 ## S03 · Repo scaffold + CI `P0`
 

@@ -1,7 +1,11 @@
 # ADR-0001 · Fork Azure/logicapps-migration-agent rather than build parsers from scratch
 
-**Status:** Accepted, **pending licence verification** — this is the P0 blocker
+**Status:** **Accepted** — licence verified 26 July 2026
 **Date:** 26 July 2026
+
+> **Licence resolved.** Upstream is **verbatim, unmodified MIT** (Copyright © 2026 Microsoft Corporation) with no rider, no field-of-use restriction and no trademark clause. Commercial forking, sublicensing and selling are expressly granted. Full review: [S01 · Upstream licence review](../legal/S01-upstream-licence-review.md).
+>
+> Two conditions attach, both now part of S02 scope: **strip the Microsoft telemetry dependencies**, and **sever the hard dependency on the proprietary `ms-azuretools.vscode-azurelogicapps` extension**. A transitive dependency licence scan is still outstanding and is the only real remaining exposure.
 
 ## Context
 
@@ -33,10 +37,14 @@ Rebuilding a BizTalk parser (`.odx`, `.btm`, `.btp`, `.xsd`, bindings) and desig
 
 **Bad.** We inherit an IR with a Logic Apps bias in its `targetMapping`, which `targetPlan` works around rather than fixes. Upstream is in preview and may change shape. We carry an ongoing decision about whether to track upstream or diverge.
 
-**Blocking.** The upstream licence must permit a commercial fork. Until that is confirmed in writing, **no implementation work should start** — if the answer is no, Option C becomes the fallback and the architecture documents remain valid but the parser build returns to scope.
+**Resolved (was blocking).** The licence permits a commercial fork. Option C (hybrid) is no longer needed and the parser build stays out of scope.
+
+**New risk surfaced by the review.** Upstream was created 4 May 2026 and has 6 stars and 7 forks. The licence is safe; the *project* is unproven and may change shape or be abandoned. That argues for treating this as a genuine fork we own rather than a tracked upstream dependency — and it bears directly on [ADR-0006](0006-consume-upstream-converter.md), whose premise is depending on this project's converter.
 
 ## Follow-up
 
-- [ ] Read the upstream `LICENSE` and any contributor/usage terms
-- [ ] Formal opinion on commercial redistribution of a fork
+- [x] Read the upstream `LICENSE` and any contributor/usage terms — verbatim MIT, no additional terms
+- [ ] Counsel glance at the MIT terms and attribution mechanics (a formality for unmodified MIT, but record it)
+- [ ] Transitive dependency licence scan, gated in CI — the only real remaining exposure
+- [ ] Ship a `THIRD-PARTY-NOTICES` file carrying Microsoft's MIT notice
 - [ ] Spike: extract `src/parsers` + `src/ir` with no `vscode` imports, prove it produces valid `ir.json` headlessly

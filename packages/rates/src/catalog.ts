@@ -10,22 +10,10 @@
  * pricing it as zero. See docs/specs/001-cost-engine.md step 2.
  */
 
-/** Stable meter keys. Values are the strings passed to RateCard.meterRate(). */
-export const METER_KEYS = {
-  laBuiltinAction: 'logicapps.consumption.action.builtin',
-  laStandardConnectorAction: 'logicapps.consumption.action.standardConnector',
-  laEnterpriseConnectorAction: 'logicapps.consumption.action.enterpriseConnector',
-  laStandardVcpuHour: 'logicapps.standard.vcpu.hour',
-  laStandardMemoryGibHour: 'logicapps.standard.memory.gibHour',
-  laStandardWs1Month: 'logicapps.standard.ws1.month',
-  sbBaseMonth: 'servicebus.standard.base.month',
-  sbOperation: 'servicebus.standard.operation',
-  fnExecution: 'functions.ondemand.execution',
-  fnGbSecond: 'functions.ondemand.gbSecond',
-  storageTableTransaction: 'storage.table.transaction',
-} as const;
-
-export type MeterKey = (typeof METER_KEYS)[keyof typeof METER_KEYS];
+// Meter keys are defined in core-types so the pure cost package can use them
+// too; re-exported here for the rates package's public API.
+import { METER_KEYS, type MeterKey } from '@ibexcairn/core-types';
+export { METER_KEYS, type MeterKey };
 
 /** Every key the cost model (S13) resolves. The committed fixture must satisfy
  * all of these, and a live capture must map all of them or fail. */

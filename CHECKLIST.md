@@ -1,6 +1,6 @@
 # Ibex Cairn - build checklist
 
-**5 / 40 stages complete.** Generated from [STAGES.csv](STAGES.csv) by `python scripts/status.py --md` - do not edit by hand.
+**6 / 40 stages complete.** Generated from [STAGES.csv](STAGES.csv) by `python scripts/status.py --md` - do not edit by hand.
 
 Legend: `[x]` done &middot; `[~]` in progress &middot; `[ ]` todo. Gates are human sign-off points.
 
@@ -12,7 +12,7 @@ Legend: `[x]` done &middot; `[~]` in progress &middot; `[ ]` todo. Gates are hum
 - [x] S03 Repo scaffold + CI
 - [x] S04 LLM provider abstraction
 
-## Assessment (1/14)
+## Assessment (2/14)
 
 - [ ] S05 Ingest engine &larr; next
 - [ ] S06 IR extension
@@ -22,7 +22,7 @@ Legend: `[x]` done &middot; `[~]` in progress &middot; `[ ]` todo. Gates are hum
 - [ ] S10 Disposition engine
 - [ ] S11 Archetype classifier
 - [x] S12 Rate card client
-- [ ] S13 Cost model + crossover engine
+- [x] S13 Cost model + crossover engine
 - [ ] S14 Constraint filter
 - [ ] S15 Portfolio optimiser
 - [ ] S16 Architecture Design engine

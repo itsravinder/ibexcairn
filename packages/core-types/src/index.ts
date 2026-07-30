@@ -38,6 +38,25 @@ export interface Volumetrics {
   readonly workflowsPerPlan?: number;
 }
 
+/** Stable internal meter keys the cost engine asks the rate card for. Defined
+ * here (not in the rates package) so the pure cost package can reference them
+ * while depending only on core-types. The rates package re-exports these. */
+export const METER_KEYS = {
+  laBuiltinAction: 'logicapps.consumption.action.builtin',
+  laStandardConnectorAction: 'logicapps.consumption.action.standardConnector',
+  laEnterpriseConnectorAction: 'logicapps.consumption.action.enterpriseConnector',
+  laStandardVcpuHour: 'logicapps.standard.vcpu.hour',
+  laStandardMemoryGibHour: 'logicapps.standard.memory.gibHour',
+  laStandardWs1Month: 'logicapps.standard.ws1.month',
+  sbBaseMonth: 'servicebus.standard.base.month',
+  sbOperation: 'servicebus.standard.operation',
+  fnExecution: 'functions.ondemand.execution',
+  fnGbSecond: 'functions.ondemand.gbSecond',
+  storageTableTransaction: 'storage.table.transaction',
+} as const;
+
+export type MeterKey = (typeof METER_KEYS)[keyof typeof METER_KEYS];
+
 /** Candidate Azure compositions the cost engine prices (S13). More are added
  * as emitters land; this is not the closed set of Azure targets. */
 export type CandidateId =

@@ -219,17 +219,21 @@ Built to [Spec 001 step 2](specs/001-cost-engine.md). `packages/rates`.
 - [ ] Ubuntu CI leg observed green — verified locally on Windows only
 - [ ] **Regression suite with one fixture per billing rule** — deferred to S13, where the billing rules live
 
-## S13 · Cost model + crossover engine `P0`
+## S13 · Cost model + crossover engine `P0` — **built, CI-observation pending**
 
-Constraint in [ADR-0004](adr/0004-llm-never-produces-cost-figures.md): the model never produces a number.
+Built `packages/cost` to [Spec 001 step 3](specs/001-cost-engine.md). Constraint in [ADR-0004](adr/0004-llm-never-produces-cost-figures.md): the model never produces a number.
 
-- [ ] `cost(placement, volume, rate_card)` as a pure function
-- [ ] Consumption meters every action; **Standard includes built-in service-provider connectors and meters only enterprise connectors**
-- [ ] Storage transactions modelled for stateful workflows
-- [ ] Cost curves across volume decades, not point estimates
-- [ ] Crossover threshold detection where the recommendation flips
-- [ ] Unit tests asserting the known crossovers (~17k and ~2.1M msgs/month for the reference flow)
-- [ ] No LLM call anywhere in this code path
+- [x] `cost(placement, volumetrics, rateCard)` as a **pure** function; plus `priceAll`, `cheapest`, `findCrossovers`
+- [x] Depends only on `core-types` (DoD) — `METER_KEYS` moved to core-types so the pure package needn't import `rates`
+- [x] Consumption meters every action; **Standard includes built-in/standard connectors in-plan and meters only enterprise** — each of the 5 billing rules has an isolating test
+- [x] Storage transactions modelled for stateful; absent for stateless
+- [x] Shared plan steps up to a dedicated plan past its capacity ceiling
+- [x] `findCrossovers` scans log-spaced volumes and reports every flip (sampled bracket)
+- [x] **Real eastus rates reproduce the spec crossovers**: ~16.6k cons→shared, ~2.09M shared→function; enterprise connector collapses to a single ~6.6k flip to function
+- [x] CLI `cost --volume N [--enterprise-connector --stateless --share n --region r]` prints breakdown, recommendation and crossovers
+- [x] Every line item carries a meter id + provenance; **no LLM call anywhere in the path**
+- [x] 34 tests green (cost: 11)
+- [ ] Ubuntu CI leg observed green — verified locally on Windows only
 
 ## S14 · Constraint filter `P0`
 

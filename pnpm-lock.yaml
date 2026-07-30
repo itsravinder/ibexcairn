@@ -32,9 +32,18 @@ importers:
 
   packages/cli:
     dependencies:
+      '@ibexcairn/core-types':
+        specifier: workspace:*
+        version: link:../core-types
+      '@ibexcairn/cost':
+        specifier: workspace:*
+        version: link:../cost
       '@ibexcairn/engine-core':
         specifier: workspace:*
         version: link:../engine-core
+      '@ibexcairn/rates':
+        specifier: workspace:*
+        version: link:../rates
 
   packages/core-types: {}
 

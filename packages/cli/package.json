@@ -14,6 +14,9 @@
     "clean": "tsc -b --clean"
   },
   "dependencies": {
-    "@ibexcairn/engine-core": "workspace:*"
+    "@ibexcairn/core-types": "workspace:*",
+    "@ibexcairn/cost": "workspace:*",
+    "@ibexcairn/engine-core": "workspace:*",
+    "@ibexcairn/rates": "workspace:*"
   }
 }
